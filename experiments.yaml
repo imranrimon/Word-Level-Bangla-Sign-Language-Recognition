@@ -1,0 +1,96 @@
+# Master Experiment List
+# Usage: python tools/run_experiments.py --config experiments.yaml
+
+experiments:
+  # Ablation Baselines
+  - name: "Pose-LSTM (Video)"
+    config: "config/bdsl_pose_lstm.yaml"
+    description: "Ablation Baseline: Bi-LSTM on Flattened Pose Sequence (Video)"
+
+  - name: "Pose-LSTM (Image)"
+    config: "config/bdsl_img_pose_lstm.yaml"
+    description: "Ablation Baseline: Bi-LSTM on Flattened Pose Sequence (Image)"
+
+  - name: "ST-GCN Vanilla (Video)"
+    config: "config/bdsl_st_gcn_vanilla.yaml"
+    description: "Ablation Baseline: Pure ST-GCN without Attention or Dilations (Video)"
+
+  - name: "ST-GCN Vanilla (Image)"
+    config: "config/bdsl_img_st_gcn_vanilla.yaml"
+    description: "Ablation Baseline: Pure ST-GCN without Attention or Dilations (Image)"
+
+  # Approach 1: SLGTFormer (Transformer)
+  - name: "SLGTFormer Joint (Video)"
+    config: "config/bdsl.yaml"
+    description: "Baseline Transformer on Video Joint Data"
+
+
+  - name: "SLGTFormer Joint (Image)"
+    config: "config/bdsl_img.yaml"
+    description: "Baseline Transformer on Static Image Joint Data"
+
+  - name: "SLGTFormer Bone (Video)"
+    config: "config/bdsl_bone.yaml"
+    description: "Transformer on Video Bone Vectors (Multi-Stream)"
+
+  - name: "SLGTFormer Bone (Image)"
+    config: "config/bdsl_img_bone.yaml"
+    description: "Transformer on Image Bone Vectors (Multi-Stream)"
+
+  # Approach 2: Attention GNN (Hybrid)
+  - name: "Attention GNN (Video)"
+    config: "config/bdsl_gnn.yaml"
+    description: "Comparison Model: ST-GCN + Dilated TCN + Global Attention on Video Data"
+
+  - name: "Attention GNN (Image)"
+    config: "config/bdsl_img_gnn.yaml"
+    description: "Comparison Model: ST-GCN + Dilated TCN + Global Attention on Image Data"
+
+  # Approach 3: GNN Variations
+  - name: "GNN + Bi-LSTM (Video)"
+    config: "config/bdsl_gnn_lstm.yaml"
+    description: "Spatial GCN + Bi-LSTM Temporal Modeling on Video"
+
+  - name: "GNN + Bi-LSTM (Image)"
+    config: "config/bdsl_img_gnn_lstm.yaml"
+    description: "Spatial GCN + Bi-LSTM Temporal Modeling on Image"
+
+  - name: "GNN + Transformer (Video)"
+    config: "config/bdsl_gnn_transformer.yaml"
+    description: "Spatial GCN + Transformer Encoder Temporal Modeling on Video"
+
+  - name: "GNN + Transformer (Image)"
+    config: "config/bdsl_img_gnn_transformer.yaml"
+    description: "Spatial GCN + Transformer Encoder Temporal Modeling on Image"
+
+  # Approach 4: Proposed Adaptive GNN (CTR-GCN Style)
+  - name: "Adaptive GNN (Proposed)"
+    config: "config/bdsl_adaptive_gnn.yaml"
+    description: "Proposed Method V2: MS-TCN + Stabilized Adaptive Graph (CTR-GCN Style)"
+
+  # Ablation Study: Table 1 Variants (Video)
+  - name: "SLGTFormer w/o LGRPE"
+    config: "config/bdsl_no_lgrpe.yaml"
+    description: "Remove Local Global Relative Positional Encoding from SLGTFormer (Video)"
+  
+  - name: "SLGTFormer w/o TTSA"
+    config: "config/bdsl_no_ttsa.yaml"
+    description: "Remove Two-Stream Spatial Temporal Attention (uses standard MHSA) (Video)"
+
+  - name: "SLGTFormer w/o PAF"
+    config: "config/bdsl_no_paf.yaml"
+    description: "Remove Post-Attention Factor (Graph Adjacency Scaling) (Video)"
+
+  # Ablation Study: Table 1 Variants (Image)
+  - name: "SLGTFormer Image w/o LGRPE"
+    config: "config/bdsl_img_no_lgrpe.yaml"
+    description: "Remove Local Global Relative Positional Encoding from SLGTFormer (Image)"
+
+  - name: "SLGTFormer Image w/o TTSA"
+    config: "config/bdsl_img_no_ttsa.yaml"
+    description: "Remove Two-Stream Spatial Temporal Attention (Image)"
+
+  - name: "SLGTFormer Image w/o PAF"
+    config: "config/bdsl_img_no_paf.yaml"
+    description: "Remove Post-Attention Factor (Image)"
+

@@ -1,0 +1,58 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+anaconda3/
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+.gemini/
+
+# Data & Model Weights (Large Files)
+data/
+work_dir/
+save_models/
+runs/
+*.npy
+*.pkl
+*.pt
+*.pth
+
+# Large Datasets & Papers
+Word_level_Bangla_Sign_Language_Dataset/
+*.pdf
+
+# Logs & Temp Files
+log.txt
+*.log
+best_results_temp.csv
+summary_output.txt
+
+# Experiment Management (temp)
+experiments_rerun.yaml
+experiments_resume.yaml

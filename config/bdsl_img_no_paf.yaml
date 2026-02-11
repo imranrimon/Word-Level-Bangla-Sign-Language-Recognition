@@ -1,0 +1,62 @@
+work_dir: ./work_dir/bdsl_img_no_paf/
+model_saved_name: ./work_dir/bdsl_img_no_paf/bdsl_img_no_paf_model
+Experiment_name: bdsl_img_no_paf
+
+# feeder
+feeder: feeders.feeder.Feeder
+train_feeder_args:
+  data_path: ./data/bdsl_img/train_data_filtered.npy
+  label_path: ./data/bdsl_img/train_label_filtered.pkl
+  debug: False
+  random_choose: False
+  random_shift: False
+  random_move: False
+  window_size: 120
+  normalization: False
+
+test_feeder_args:
+  data_path: ./data/bdsl_img/val_data_filtered.npy
+  label_path: ./data/bdsl_img/val_label_filtered.pkl
+  window_size: 120
+  random_choose: True
+
+# model
+model: model.twin_attention.Model
+model_args:
+  num_class: 38
+  num_point: 27
+  num_person: 1
+  graph: graph.sign_27.Graph
+  graph_args:
+    labeling_mode: 'spatial'
+  groups: 16
+  block_size: 41
+  use_grpe: True
+  use_ttsa: True
+  use_paf: False # Ablation: w/o Post-Attention Factor
+  inner_dim: 64
+  window_size: 120
+  s_num_heads: 4
+  t_num_heads: 4
+  t_depths: [2, 2, 2, 2]
+  wss: [5, 5, 5, 5]
+  sr_ratios: [8, 4, 2, 1]
+  depth: 4
+  s_pos_emb: False
+  drop_layers: 2
+
+# optim
+weight_decay: 0.0001
+base_lr: 0.01
+step: [60, 80]
+
+# training
+device: [0]
+batch_size: 16
+test_batch_size: 16
+num_epoch: 100
+nesterov: True
+warm_up_epoch: 5
+
+wandb: False
+num_worker: 0

@@ -1,0 +1,53 @@
+work_dir: ./work_dir/bdsl_img_gnn_transformer/
+model_saved_name: ./work_dir/bdsl_img_gnn_transformer/bdsl_img_gnn_transformer_model
+Experiment_name: bdsl_img_gnn_transformer
+
+# feeder
+feeder: feeders.feeder.Feeder
+train_feeder_args:
+  data_path: ./data/bdsl_img/train_data_filtered.npy
+  label_path: ./data/bdsl_img/train_label_filtered.pkl
+  debug: False
+  random_choose: True
+  random_shift: True
+  random_move: False
+  window_size: 120
+  normalization: True
+  random_mirror: True
+  random_mirror_p: 0.5
+  is_vector: False
+  lap_pe: False
+
+test_feeder_args:
+  data_path: ./data/bdsl_img/val_data_filtered.npy
+  label_path: ./data/bdsl_img/val_label_filtered.pkl
+  window_size: 120
+  random_choose: True
+  normalization: True
+
+# model
+model: model.gnn_transformer.Model
+model_args:
+  num_class: 38
+  num_point: 27
+  num_person: 1
+  graph: graph.sign_27.Graph
+  graph_args:
+    labeling_mode: 'spatial'
+  in_channels: 3
+
+# optim
+weight_decay: 0.0001
+base_lr: 0.01
+step: [60, 80]
+
+# training
+device: [0]
+batch_size: 16
+test_batch_size: 16
+num_epoch: 100
+nesterov: True
+warm_up_epoch: 5
+
+wandb: False
+num_worker: 0
