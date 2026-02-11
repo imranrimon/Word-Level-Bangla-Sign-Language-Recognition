@@ -145,11 +145,7 @@ scripts/run_ablations.bat
 ## Citation
 
 ```bibtex
-@article{rimon2026bdsl,
-  title={Word-Level Bangla Sign Language Recognition Using Attention Graph Neural Network},
-  author={Rimon, Imran},
-  year={2026}
-}
+Submitted
 ```
 
 ## License
