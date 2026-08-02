@@ -14,7 +14,7 @@ Architectures: **SLGTFormer** (LGRPE + TTSA + PAF), **BlockGCN** (+KD, +RQE vari
 
 A **sister paper** on still-image Bangla handshape recognition lives in `bangla_handshape/` (shared library) + `path1_bangla_dinov2/` (LoRA-tune DINOv2), `path2_handshape_kd/` (distill handshape teacher into BlockGCN), `path3_handshape_benchmark/` (signer-disjoint image benchmark). `path4_rgb_baseline/` holds the Kinetics-pretrained RGB video baseline (B2). Each `path*/` has its own README and entry points.
 
-Strategy references: `SOTA_VENUE_STRATEGY.md` (novelty map, mandatory baselines, venue plan), `docs/RECIPE_CONTROL.md` (shared-recipe policy for the 11-arch table), `docs/B1_FOUNDATION_BASELINES.md` (Uni-Sign/SHuBERT baseline runbook; Uni-Sign cloned at `external/Uni-Sign`).
+Strategy references: `SOTA_VENUE_STRATEGY.md` (novelty map, mandatory baselines, venue plan), `docs/TOPTIER_NEURIPS_ICLR_PLAN.md` (NeurIPS/ICLR framing), `docs/RECIPE_CONTROL.md` (shared-recipe policy for the 11-arch table), `docs/B1_FOUNDATION_BASELINES.md` (Uni-Sign/SHuBERT baseline runbook; Uni-Sign cloned at `external/Uni-Sign`), `docs/AUDIT_FIX_9_KEYPOINT_JUSTIFICATION.md` (reviewer defense for the 27-node skeleton — inherited from SLGTFormer, not an arbitrary choice). `RUNBOOK.md` is the top-to-bottom operational runbook (Stages A–D); the per-paper runbooks scope subsets.
 
 ## Environment
 
@@ -23,7 +23,14 @@ conda env create -f environment.yml      # env name: bdsl_graph
 conda activate bdsl_graph
 ```
 
-Python 3.8, PyTorch + CUDA 11.8, PyG, timm, einops, mediapipe, opencv. Weights & Biases optional (gated by `wandb:` key in configs).
+Python 3.8, PyTorch + CUDA 11.8, PyG, timm, einops, mediapipe, opencv. Weights & Biases optional (gated by `wandb:` key in configs). On Linux, `mediapipe` is pip-only (`pip install mediapipe==0.10.18` after the conda env).
+
+### HPC (WVU DollySods / SLURM)
+
+The repo now runs on the WVU DollySods cluster as well as Windows. `scripts/hpc/README_HPC_MIGRATION.md` is the current-state migration walkthrough (code/data/env/launch); `HPC_LAUNCH_GUIDE.md` still holds the execution DAG and pitfalls.
+
+- **`data/` and `work_dir/` are symlinks into `/scratch/<user>/SLGTformer/`.** Don't delete or `mkdir` over them; scratch is purge-prone, so back up completed `work_dir/` checkpoints and `results_final.csv`. Large caches (`bdsl_si`, `bdsl_cache`, `bdslw401_si`, SSL pool) are gitignored and transferred by rsync; the 11 GB `bdsl_si_dino` features are re-extracted on-cluster (a GPU step).
+- **Launch via SLURM**, not the `.bat` files: `scripts/hpc/slurm_si_sweep.sbatch` (Option A table + ablations), `slurm_loso_array.sbatch`, `slurm_ssl_pretrain.sbatch`, `slurm_ssl_finetune.sbatch`. Fill the `<PARTITION>` `#SBATCH` line from `sinfo -s` before submitting; each script `source`s `~/miniconda3/etc/profile.d/conda.sh`, activates `bdsl_graph`, and sets `PYTHONIOENCODING=utf-8` (DollySods locale is often ASCII).
 
 ## Core commands
 
@@ -86,7 +93,7 @@ All models expose `Model(num_class, num_point, num_person, graph, graph_args, in
 ### Config conventions
 
 - `bdsl_*.yaml` → video; `bdsl_img_*.yaml` → image (legacy random split). Suffixes: `_si` (signer-independent split — current standard), `_bone` (bone stream), `_w401` (BdSLW401 401-class), `_w102a_sentence` (sentence-level), `_smoke` (fast sanity run), architecture tags (`_gnn`, `_block_gcn`, `_pose_lstm`, …), `_no_lgrpe`/`_no_ttsa`/`_no_paf` (SLGTFormer ablations), `_rqe` (RQE variant). `bdsl_shubert_pretrain*.yaml` are `main_pretrain.py` configs.
-- Sweep registries: `experiments_si.yaml` (SI benchmark, consumed by `run_multiseed.py`/`run_loso.py`) and `experiments.yaml` (legacy suite for `run_experiments.py`). A config not registered in the relevant registry won't run in the sweep.
+- Sweep registries: `experiments_si.yaml` (full SI benchmark, consumed by `run_multiseed.py`/`run_loso.py`) and `experiments.yaml` (legacy suite for `run_experiments.py`). The SI benchmark is split for staged HPC launch: `experiments_si_main.yaml` is the runnable-now pose subset (omits the DINOv2 FlatTemporal row `bdsl_dino_temporal_si.yaml`, which needs Stage B.1 features first), and `experiments_si_ablations.yaml` holds the three SLGTFormer sub-module ablations. A config not registered in the relevant registry won't run in the sweep.
 
 ## Gotchas
 
@@ -95,6 +102,6 @@ All models expose `Model(num_class, num_point, num_person, graph, graph_args, in
 - **SSL pretraining requires `stride_between_stages: False`** on the BlockGCN backbone so temporal resolution is preserved (`T_out == T_in`) for per-frame masked prediction; classification configs keep the default `True`.
 - **SSL cluster targets must use `--feature-mode pose_motion`.** The `frame` mode makes the masked-prediction task trivially solvable by copying neighbouring frames.
 - **LOSO variance is the headline variance.** Report mean ± std across folds (signer noise), not across seeds (init noise only).
-- **Windows-first repo.** Launchers are `.bat`; paths in scripts assume a cwd of the repo root (`cd /d "%~dp0.."`). Runbooks use `^` line continuations (cmd). Be mindful when porting commands to bash.
+- **Dual-platform, Windows-authored.** `scripts/*.bat` launchers assume a cwd of the repo root (`cd /d "%~dp0.."`) and runbooks use `^` line continuations (cmd) — `RUNBOOK.md` even hardcodes `F:\SLGTformer`. On Linux/HPC use the `scripts/hpc/*.sbatch` equivalents instead and translate paths. `scripts/detach_run.py` is Windows-only (works around a Ctrl+C process-group kill on scheduled tasks) and has no bearing on SLURM runs.
 - **`num_worker`** defaults to 32 in argparse but is usually overridden to 0 in the YAMLs — multi-worker DataLoaders can be flaky on Windows + mediapipe pipelines.
 - **`graph.sign_27` uses a `wlasl` branch** for the 27-node BdSL skeleton (the name is historical, from the WLASL lineage). Don't be misled by the label.
