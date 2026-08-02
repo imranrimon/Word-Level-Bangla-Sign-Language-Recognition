@@ -23,7 +23,7 @@ conda env create -f environment.yml      # env name: bdsl_graph
 conda activate bdsl_graph
 ```
 
-Python 3.8, PyTorch + CUDA 11.8, PyG, timm, einops, mediapipe, opencv. Weights & Biases optional (gated by `wandb:` key in configs). On Linux, `mediapipe` is pip-only (`pip install mediapipe==0.10.18` after the conda env).
+Python 3.8, PyTorch + CUDA 11.8, PyG, timm, einops, mediapipe, opencv. Weights & Biases optional (gated by `wandb:` key in configs). On Linux, `mediapipe` is pip-only and **must be `pip install --only-binary=:all: mediapipe==0.10.9`** — it's the newest cp38 wheel that still ships the legacy `mp.solutions.holistic` API the pose extractors use; `mediapipe>=1.0` / anything needing Python ≥3.9 breaks on `list[...]` syntax at import. Pose extraction is the only step that needs mediapipe (training/eval don't).
 
 ### HPC (WVU DollySods / SLURM)
 

@@ -1,0 +1,23 @@
+{
+  "schema": "lsa64-signer-independent-v1",
+  "description": "Fixed signer-disjoint split of LSA64 (Argentine Sign Language) for cross-lingual transfer evaluation. 64 signs x 10 signers x 5 reps; train=signers 1-7, val=8, test=9-10.",
+  "filename_pattern": "^(\\d{3})_(\\d{3})_(\\d{3})\\.mp4$",
+  "splits": {
+    "train": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "val": [
+      8
+    ],
+    "test": [
+      9,
+      10
+    ]
+  }
+}
