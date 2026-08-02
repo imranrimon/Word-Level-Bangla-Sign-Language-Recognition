@@ -1,0 +1,39 @@
+Experiment_name: bdsl_shubert_pretrain_smoke
+
+# 2-3 minute smoke version of bdsl_shubert_pretrain.yaml.
+# Verifies that main_pretrain.py loads, the SSL pool + targets align, the
+# backbone forwards under masked input, the cross-entropy is finite, and
+# the optimizer step runs end-to-end. Saves a single 1-epoch checkpoint.
+
+backbone: model.block_gcn.Model
+backbone_args:
+  num_class: 60
+  num_point: 27
+  num_person: 1
+  graph: graph.sign_27.Graph
+  graph_args:
+    labeling_mode: 'spatial'
+  in_channels: 3
+  num_blocks: [2, 2, 2, 2]
+  stage_channels: [64, 128, 256, 256]
+  max_distance: 8
+  return_features: True
+  stride_between_stages: False        # required for SHuBERT-style masking
+
+pretrain:
+  manifest: data/ssl_pool_manifest.json
+  targets:  data/pretrain_kmeans_targets.npz
+  num_codes: 64
+  mask_ratio: 0.3
+  window_size: 120
+  feat_dim: 256
+  max_clips: 64                        # smoke: only iterate first 64 SSL clips
+
+base_lr: 0.0001
+weight_decay: 0.0001
+
+batch_size: 4
+num_epoch: 1
+save_interval: 1
+num_worker: 0
+log_every: 4

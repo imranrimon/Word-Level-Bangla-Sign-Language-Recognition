@@ -1,0 +1,60 @@
+Experiment_name: bdsl_block_gcn_si_smoke
+
+# 2-3 minute smoke version of bdsl_block_gcn_si.yaml.
+# Verifies the classification harness end-to-end on 100 train + 100 val
+# samples for a single epoch. Use as a preflight check for any Stage A or
+# Stage C fine-tune run on the same data layout.
+
+feeder: feeders.feeder.Feeder
+train_feeder_args:
+  data_path: ./data/bdsl_si/train_data.npy
+  label_path: ./data/bdsl_si/train_label.pkl
+  debug: True                         # Feeder's built-in: load only 100 samples
+  random_choose: True
+  random_shift: True
+  window_size: 120
+  normalization: True
+  random_mirror: False
+  random_mirror_p: 0.0
+  is_vector: False
+  lap_pe: False
+
+test_feeder_args:
+  data_path: ./data/bdsl_si/val_data.npy
+  label_path: ./data/bdsl_si/val_label.pkl
+  debug: True
+  window_size: 120
+  random_choose: False
+  normalization: True
+
+model: model.block_gcn.Model
+model_args:
+  num_class: 60
+  num_point: 27
+  num_person: 1
+  graph: graph.sign_27.Graph
+  graph_args:
+    labeling_mode: 'spatial'
+  in_channels: 3
+  num_blocks: [2, 2, 2, 2]
+  stage_channels: [64, 128, 256, 256]
+  max_distance: 8
+
+weight_decay: 0.0001
+base_lr: 0.1
+step: [60, 80]
+optimizer: SGD
+
+device: [0]
+keep_rate: 0.9
+only_train_epoch: 1
+batch_size: 4
+test_batch_size: 4
+num_epoch: 1
+nesterov: True
+warm_up_epoch: 1
+eval_interval: 1
+save_interval: 1
+
+wandb: False
+num_worker: 0

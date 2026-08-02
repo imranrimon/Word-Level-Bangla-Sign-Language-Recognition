@@ -10,3 +10,11 @@ from . import gnn_transformer
 from . import pose_lstm
 from . import st_gcn_vanilla
 from . import adaptive_gnn
+from . import rqe
+from . import block_gcn
+from . import block_gcn_rqe
+from . import shubert_pretrain
+from . import flat_temporal
+from . import slgtformer_rqe
+from . import block_gcn_kd
+from . import block_gcn_multihead

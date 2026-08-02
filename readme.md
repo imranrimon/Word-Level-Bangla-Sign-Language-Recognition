@@ -22,6 +22,8 @@ The project explores the following models:
 
 ## Results
 
+Reported Top-5 values are tracked explicitly as either **Top5@Top1** (the same epoch as the best Top-1 result) or **Best Top5** (the independent best Top-5 epoch). Use `python tools/summarize_results.py --csv results_final.csv` for the full policy-aware summary.
+
 ### Video Dataset
 
 | Model | Top-1 Acc (%) | Top-5 Acc (%) |
@@ -81,7 +83,7 @@ The project explores the following models:
 ├── tools/                     # Utilities (monitoring, visualization, fusion)
 ├── main.py                    # Main training and evaluation entry point
 ├── experiments.yaml           # Full experiment registry
-└── results_final.csv          # Experiment results log (not tracked)
+└── results_final.csv          # Experiment results log
 ```
 
 ## Setup
@@ -101,9 +103,6 @@ cd Word-Level-Bangla-Sign-Language-Recognition
 # Create conda environment
 conda env create -f environment.yml
 conda activate bdsl_graph
-
-# Install dependencies
-pip install timm einops scipy
 ```
 
 ### Data Preparation
@@ -111,7 +110,7 @@ pip install timm einops scipy
 1. Download the BdSLW60 dataset
 2. Run preprocessing to extract skeleton keypoints:
    ```bash
-   python preprocessing/preprocess_bdsl.py
+   python preprocessing/preprocess_bdsl.py --data_root "Word_level_Bangla_Sign_Language_Dataset/BdSLW30" --output_dir data/bdsl
    ```
 3. For bone modality, generate bone data:
    ```bash
@@ -128,6 +127,11 @@ python main.py --config config/bdsl.yaml
 ### Full Experiment Suite
 ```bash
 python tools/run_experiments.py --config experiments.yaml
+```
+
+### Project Validation
+```bash
+python tools/validate_project.py
 ```
 
 ### Ablation Study

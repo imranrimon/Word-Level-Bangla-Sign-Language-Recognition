@@ -1,0 +1,35 @@
+Experiment_name: rgb_s3d_bdsl_si
+
+# B2: Kinetics-400-pretrained S3D fine-tuned on BdSLW60-SI raw videos.
+# Run:
+#   python -m path4_rgb_baseline.train_rgb --config path4_rgb_baseline/configs/s3d_bdsl_si.yaml --seed 0
+# First run downloads S3D KINETICS400_V1 weights via torchvision (pytorch.org).
+# ~30 epochs x ~9 min/epoch (batch 8, workers 0) on one RTX 8000. Raise
+# num_worker on HPC (video decode is the bottleneck; cv2 in workers is safe —
+# the num_worker=0 caution in CLAUDE.md is about mediapipe pipelines).
+
+model_name: s3d          # s3d | r2plus1d_18 | mvit_v2_s | i3d
+pretrained: True
+num_class: 60
+
+dataset_root: Word_level_Bangla_Sign_Language_Dataset/BdSLW30
+classes_json: data/bdsl_si/classes.json
+num_frames: 32
+frame_size: 224
+resize_short: 256
+
+batch_size: 8
+test_batch_size: 8
+base_lr: 0.01
+weight_decay: 0.0001
+step: [15, 25]
+num_epoch: 30
+warm_up_epoch: 2
+nesterov: True
+label_smoothing: 0.0
+amp: True
+
+device: [0]
+seed: 0
+num_worker: 0
+results_csv: results_final.csv

@@ -1,0 +1,56 @@
+Experiment_name: bdsl_pose_temporal_si
+
+# Flat temporal transformer over MediaPipe 27-keypoint pose, signer-independent.
+# Serves as the fair-comparison baseline for config/bdsl_dino_temporal_si.yaml
+# (same architecture, different feature source). The Option-B claim stands or
+# falls on the gap between these two numbers.
+
+feeder: feeders.feeder.Feeder
+train_feeder_args:
+  data_path: ./data/bdsl_si/train_data.npy
+  label_path: ./data/bdsl_si/train_label.pkl
+  debug: False
+  random_choose: True
+  random_shift: True
+  random_move: False
+  window_size: 120
+  normalization: True
+  random_mirror: False
+  random_mirror_p: 0.0
+  is_vector: False
+  lap_pe: False
+
+test_feeder_args:
+  data_path: ./data/bdsl_si/val_data.npy
+  label_path: ./data/bdsl_si/val_label.pkl
+  window_size: 120
+  random_choose: False
+  normalization: True
+
+model: model.flat_temporal.Model
+model_args:
+  num_class: 60
+  num_point: 27
+  num_person: 1
+  in_channels: 3
+  d_model: 256
+  num_heads: 8
+  num_layers: 6
+  dim_feedforward: 1024
+  dropout: 0.1
+  max_frames: 300
+
+weight_decay: 0.0001
+base_lr: 0.001
+step: [60, 80]
+optimizer: AdamW
+
+device: [0]
+batch_size: 32
+test_batch_size: 32
+num_epoch: 100
+nesterov: True
+warm_up_epoch: 5
+
+wandb: False
+num_worker: 0

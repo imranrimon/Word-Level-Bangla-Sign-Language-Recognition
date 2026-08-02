@@ -1,0 +1,87 @@
+Experiment_name: bdsl_block_gcn_cotrain_si_smoke
+
+# 2-minute smoke for main_cotrain.py: debug feeders (first 100 samples of
+# each dataset), 2 epochs, tiny batches. Verifies imports, config parsing,
+# mixed-domain batching, both loss paths, val eval, checkpointing, and CSV
+# logging. Writes to work_dir/bdsl_block_gcn_cotrain_si_smoke — never
+# clobbers real results.
+
+model: model.block_gcn_multihead.Model
+model_args:
+  num_class: 60
+  num_class_aux: 401
+  num_point: 27
+  num_person: 1
+  graph: graph.sign_27.Graph
+  graph_args:
+    labeling_mode: 'spatial'
+  in_channels: 3
+  num_blocks: [2, 2, 2, 2]
+  stage_channels: [64, 128, 256, 256]
+  max_distance: 8
+
+target_train_feeder_args:
+  data_path: data/bdsl_si/train_data.npy
+  label_path: data/bdsl_si/train_label.pkl
+  debug: True
+  random_choose: True
+  window_size: 120
+  random_shift: True
+  normalization: True
+  random_mirror: False
+  random_mirror_p: 0.0
+  is_vector: False
+  lap_pe: False
+
+target_val_feeder_args:
+  data_path: data/bdsl_si/val_data.npy
+  label_path: data/bdsl_si/val_label.pkl
+  debug: True
+  random_mirror: False
+  normalization: True
+  is_vector: False
+  lap_pe: False
+  window_size: 120
+  random_choose: False
+
+target_test_feeder_args:
+  data_path: data/bdsl_si/test_data.npy
+  label_path: data/bdsl_si/test_label.pkl
+  debug: True
+  random_mirror: False
+  normalization: True
+  is_vector: False
+  lap_pe: False
+  window_size: 120
+  random_choose: False
+
+aux_train_feeder_args:
+  data_path: data/bdslw401_si/train_data.npy
+  label_path: data/bdslw401_si/train_label.pkl
+  debug: True
+  random_choose: True
+  window_size: 120
+  random_shift: True
+  normalization: True
+  random_mirror: False
+  random_mirror_p: 0.0
+  is_vector: False
+  lap_pe: False
+
+aux_loss_weight: 1.0
+aux_fraction: 1.0
+
+weight_decay: 0.0001
+base_lr: 0.1
+step: [1]
+device: [0]
+batch_size: 8
+test_batch_size: 8
+num_epoch: 2
+nesterov: True
+warm_up_epoch: 0
+optimizer: SGD
+seed: 0
+
+num_worker: 0
+results_csv: results_final.csv

@@ -3,8 +3,25 @@ import os
 import argparse
 import pickle
 import numpy as np
+import yaml
 
-def fuse_scores(work_dir_joint, work_dir_bone, alpha=1.0):
+def load_label_path_from_config(work_dir):
+    config_path = os.path.join(work_dir, "config.yaml")
+    if not os.path.exists(config_path):
+        raise FileNotFoundError(f"Run config not found: {config_path}")
+
+    with open(config_path, "r") as f:
+        config = yaml.safe_load(f) or {}
+
+    label_path = (config.get("test_feeder_args") or {}).get("label_path")
+    if not label_path:
+        raise ValueError(f"No test_feeder_args.label_path found in {config_path}")
+    if not os.path.exists(label_path):
+        raise FileNotFoundError(f"Label file from {config_path} not found: {label_path}")
+    return label_path
+
+
+def fuse_scores(work_dir_joint, work_dir_bone, alpha=1.0, out_file="fused_results.pkl"):
     print(f"Fusing scores from:")
     print(f"  Joint: {work_dir_joint}")
     print(f"  Bone:  {work_dir_bone}")
@@ -53,15 +70,7 @@ def fuse_scores(work_dir_joint, work_dir_bone, alpha=1.0):
     right_num = 0
     total_num = 0
     
-    # Load labels to calculate accuracy
-    # infer from work_dir_joint config
-    # Hack: assume standard path
-    dataset_name = os.path.basename(work_dir_joint).replace('_graph','').replace('_bone','')
-    label_path = f"data/{dataset_name}/val_label.pkl"
-    if not os.path.exists(label_path):
-        # try bdsl
-        label_path = "data/bdsl/val_label.pkl"
-        
+    label_path = load_label_path_from_config(work_dir_joint)
     print(f"Loading labels from: {label_path}")
     with open(label_path, 'rb') as f:
         sample_name, label = pickle.load(f)
@@ -87,6 +96,10 @@ def fuse_scores(work_dir_joint, work_dir_bone, alpha=1.0):
                 if pred == gt:
                     right_num += 1
     
+    if total_num == 0:
+        print("No overlapping samples with labels were found.")
+        return
+
     acc = right_num / total_num
     print("--------------------------------------------------")
     print(f"Joint + Bone Fusion Accuracy: {acc*100:.2f}%")
@@ -96,7 +109,6 @@ def fuse_scores(work_dir_joint, work_dir_bone, alpha=1.0):
     # We can save this fused dict as a pseudo-result and run visualize_results on it?
     # Or just return.
     
-    out_file = "fused_results.pkl"
     with open(out_file, 'wb') as f:
         pickle.dump(fused_score_dict, f)
     print(f"Saved fused scores to {out_file}")
@@ -106,6 +118,7 @@ if __name__ == "__main__":
     parser.add_argument('--joint_dir', required=True)
     parser.add_argument('--bone_dir', required=True)
     parser.add_argument('--alpha', type=float, default=1.0)
+    parser.add_argument('--out_file', default='fused_results.pkl')
     args = parser.parse_args()
     
-    fuse_scores(args.joint_dir, args.bone_dir, args.alpha)
+    fuse_scores(args.joint_dir, args.bone_dir, args.alpha, args.out_file)

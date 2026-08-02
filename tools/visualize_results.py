@@ -8,6 +8,7 @@ import re
 from sklearn.metrics import confusion_matrix
 import seaborn as sns
 import glob
+import yaml
 
 def parse_log(log_path):
     print(f"Parsing log: {log_path}")
@@ -152,12 +153,6 @@ def plot_confusion_matrix(work_dir, output_dir):
     # We also need true labels.
     # config.yaml -> test_feeder_args -> label_path
     
-    # Find config
-    config_path = os.path.join(work_dir, "config.yaml") # Often outputted? 
-    # Or checking log.txt parameters line
-    
-    # Assuming standard structure
-    # Try to find eval_results
     eval_dir = os.path.join(work_dir, "eval_results")
     if not os.path.exists(eval_dir):
         print(f"No eval_results found in {work_dir}")
@@ -187,23 +182,18 @@ def plot_confusion_matrix(work_dir, output_dir):
         
     # score_dict: {filename: score_vector}
     
-    # We need True Labels.
-    # Load val_label.pkl
-    # Try to infer path. bdsl_img -> data/bdsl_img/val_label.pkl
-    # Let's look for val_label.pkl relative to work_dir? No.
-    # Hardcode logical guess based on directory name
-    
-    dataset_name = os.path.basename(work_dir) # bdsl_img or bdsl_graph
-    label_path = f"data/{dataset_name}/val_label.pkl"
-    
-    if not os.path.exists(label_path):
-        # check parent
-        parent_label = f"../data/{dataset_name}/val_label.pkl"
-        if os.path.exists(parent_label):
-            label_path = parent_label
-        else:
-             print(f"Could not find label file at {label_path}")
-             return
+    config_path = os.path.join(work_dir, "config.yaml")
+    if not os.path.exists(config_path):
+        print(f"Could not find run config at {config_path}")
+        return
+
+    with open(config_path, "r") as f:
+        config = yaml.safe_load(f) or {}
+
+    label_path = (config.get("test_feeder_args") or {}).get("label_path")
+    if not label_path or not os.path.exists(label_path):
+        print(f"Could not find label file from {config_path}: {label_path}")
+        return
 
     print(f"Loading labels from {label_path}")
     with open(label_path, 'rb') as f:

@@ -1,0 +1,59 @@
+Experiment_name: bdsl_dino_temporal_si
+
+# Flat temporal transformer over DINOv2 hand/face-crop features, signer-indep.
+# Features produced by:
+#   python preprocessing/extract_dinov2_features.py \
+#       --dataset-root "Word_level_Bangla_Sign_Language_Dataset/BdSLW30" \
+#       --output-dir data/bdsl_si_dino --cache-dir data/bdsl_dino_cache \
+#       --splits train val test --model vit_small_patch14_dinov2.lvd142m
+# V=3 regions: 0=left hand, 1=right hand, 2=face. D=384 (DINOv2-small CLS).
+
+feeder: feeders.feeder.Feeder
+train_feeder_args:
+  data_path: ./data/bdsl_si_dino/train_data.npy
+  label_path: ./data/bdsl_si_dino/train_label.pkl
+  debug: False
+  random_choose: True
+  random_shift: True
+  random_move: False
+  window_size: 120
+  normalization: False        # features are already scale-normalized by DINOv2 head
+  random_mirror: False        # mirroring 3-region DINOv2 features is nonsensical
+  random_mirror_p: 0.0
+  is_vector: False
+  lap_pe: False
+
+test_feeder_args:
+  data_path: ./data/bdsl_si_dino/val_data.npy
+  label_path: ./data/bdsl_si_dino/val_label.pkl
+  window_size: 120
+  random_choose: False
+  normalization: False
+
+model: model.flat_temporal.Model
+model_args:
+  num_class: 60
+  num_point: 3            # 3 regions: L-hand, R-hand, face
+  num_person: 1
+  in_channels: 384        # DINOv2 small CLS-token dim; change to 768 for base
+  d_model: 256
+  num_heads: 8
+  num_layers: 6
+  dim_feedforward: 1024
+  dropout: 0.1
+  max_frames: 300
+
+weight_decay: 0.0001
+base_lr: 0.001
+step: [60, 80]
+optimizer: AdamW
+
+device: [0]
+batch_size: 32
+test_batch_size: 32
+num_epoch: 100
+nesterov: True
+warm_up_epoch: 5
+
+wandb: False
+num_worker: 0

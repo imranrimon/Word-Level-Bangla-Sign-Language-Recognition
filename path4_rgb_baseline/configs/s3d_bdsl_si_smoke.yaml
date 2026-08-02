@@ -1,0 +1,31 @@
+Experiment_name: rgb_s3d_bdsl_si_smoke
+
+# ~3-minute smoke: 40 clips per split, no pretrained weights (no download),
+# 1 epoch, 16 frames. Verifies video decode, sampling, head replacement,
+# AMP step, eval, checkpointing, CSV logging.
+
+model_name: s3d
+pretrained: False
+num_class: 60
+
+dataset_root: Word_level_Bangla_Sign_Language_Dataset/BdSLW30
+classes_json: data/bdsl_si/classes.json
+num_frames: 16
+frame_size: 224
+resize_short: 256
+max_clips: 40
+
+batch_size: 4
+test_batch_size: 4
+base_lr: 0.01
+weight_decay: 0.0001
+step: [1]
+num_epoch: 1
+warm_up_epoch: 0
+nesterov: True
+amp: True
+
+device: [0]
+seed: 0
+num_worker: 0
+results_csv: results_final.csv

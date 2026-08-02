@@ -44,18 +44,7 @@ def random_choose(data_numpy, size, auto_pad=True):
     # input: C,T,V,M
     C, T, V, M = data_numpy.shape
     
-    # NEW: Find valid length (assume zero-padded at end)
-    # Sum absolute values across C, V, M
-    energy = np.abs(data_numpy).sum(axis=(0, 2, 3))
-    non_zero = np.nonzero(energy)[0]
-    if len(non_zero) > 0:
-        valid_T = non_zero[-1] + 1
-    else:
-        valid_T = 0
-        
-    # If practically empty, treat as 1 frame or full T to avoid errors
-    if valid_T == 0:
-        valid_T = T
+    valid_T = valid_frame_length(data_numpy)
 
     if valid_T == size:
          return data_numpy[:, :valid_T, :, :]
@@ -69,6 +58,34 @@ def random_choose(data_numpy, size, auto_pad=True):
         # valid_T > size: crop from valid region
         begin = random.randint(0, valid_T - size)
         return data_numpy[:, begin:begin + size, :, :]
+
+
+def valid_frame_length(data_numpy):
+    # input: C,T,V,M. Assumes zero padding, usually at the end.
+    C, T, V, M = data_numpy.shape
+    energy = np.abs(data_numpy).sum(axis=(0, 2, 3))
+    non_zero = np.nonzero(energy)[0]
+    if len(non_zero) == 0:
+        return T
+    return non_zero[-1] + 1
+
+
+def center_choose(data_numpy, size, auto_pad=True):
+    # Deterministic validation crop/pad counterpart to random_choose.
+    C, T, V, M = data_numpy.shape
+    if size <= 0:
+        return data_numpy
+
+    valid_T = valid_frame_length(data_numpy)
+    if valid_T == size:
+        return data_numpy[:, :valid_T, :, :]
+    if valid_T < size:
+        if auto_pad:
+            return auto_pading(data_numpy[:, :valid_T, :, :], size, random_pad=False)
+        return data_numpy[:, :valid_T, :, :]
+
+    begin = (valid_T - size) // 2
+    return data_numpy[:, begin:begin + size, :, :]
 
 
 def random_move(data_numpy,

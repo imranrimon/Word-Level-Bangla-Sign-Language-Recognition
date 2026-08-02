@@ -1,0 +1,41 @@
+Experiment_name: bdsl_shubert_pretrain
+
+# SHuBERT-style masked pretraining on the pooled pose-cache corpus.
+# Produces backbone-only checkpoints under work_dir/bdsl_shubert_pretrain/.
+# Fine-tune via main.py --config config/bdsl_block_gcn_si.yaml \
+#                      --weights work_dir/bdsl_shubert_pretrain/pretrained_epochN.pt \
+#                      --ignore-weights fc.weight fc.bias
+
+backbone: model.block_gcn.Model
+backbone_args:
+  num_class: 60               # ignored in pretraining; needed for backbone init
+  num_point: 27
+  num_person: 1
+  graph: graph.sign_27.Graph
+  graph_args:
+    labeling_mode: 'spatial'
+  in_channels: 3
+  num_blocks: [2, 2, 2, 2]
+  stage_channels: [64, 128, 256, 256]
+  max_distance: 8
+  return_features: True
+  # SSL masking happens at input resolution; backbone must preserve T.
+  # For classification fine-tuning we use the default (stride_between_stages=True).
+  stride_between_stages: False
+
+pretrain:
+  manifest: data/ssl_pool_manifest.json
+  targets:  data/pretrain_kmeans_targets.npz
+  num_codes: 64
+  mask_ratio: 0.3
+  window_size: 120
+  feat_dim: 256
+
+base_lr: 0.0001
+weight_decay: 0.0001
+
+batch_size: 32
+num_epoch: 30
+save_interval: 5
+num_worker: 0
+log_every: 50

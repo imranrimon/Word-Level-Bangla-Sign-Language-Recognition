@@ -1,0 +1,69 @@
+Experiment_name: bdsl_slgtformer_no_lgrpe_si
+
+# SLGTFormer ablation on the signer-independent split: w/o LGRPE.
+# Derived from config/bdsl_slgtformer_si.yaml (the full-model SI baseline);
+# only the model_args sub-module toggle differs (use_grpe: False).
+
+feeder: feeders.feeder.Feeder
+train_feeder_args:
+  data_path: data/bdsl_si/train_data.npy
+  label_path: data/bdsl_si/train_label.pkl
+  debug: False
+  random_choose: True
+  window_size: 120
+  random_shift: True
+  normalization: True
+  random_mirror: False
+  random_mirror_p: 0.0
+  is_vector: False
+  lap_pe: False
+
+test_feeder_args:
+  data_path: data/bdsl_si/val_data.npy
+  label_path: data/bdsl_si/val_label.pkl
+  random_mirror: False
+  normalization: True
+  lap_pe: False
+  window_size: 120
+  random_choose: False
+
+model: model.twin_attention.Model
+model_args:
+  num_class: 60
+  num_point: 27
+  num_person: 1
+  graph: graph.sign_27.Graph
+  groups: 16
+  block_size: 41
+  graph_args:
+    labeling_mode: 'spatial'
+  use_grpe: False   # Ablation: w/o LGRPE
+  use_ttsa: True
+  use_paf: True
+  inner_dim: 64
+  window_size: 120
+  s_num_heads: 4
+  t_num_heads: 4
+  t_depths: [2, 2, 2, 2]
+  wss: [5, 5, 5, 5]
+  sr_ratios: [8, 4, 2, 1]
+  depth: 4
+  s_pos_emb: False
+  drop_layers: 2
+
+weight_decay: 0.0001
+base_lr: 0.01
+step: [60, 80]
+
+device: [0]
+keep_rate: 0.9
+only_train_epoch: 1
+batch_size: 16
+test_batch_size: 16
+num_epoch: 100
+nesterov: True
+warm_up_epoch: 20
+
+wandb: False
+num_worker: 0
+save_interval: 10

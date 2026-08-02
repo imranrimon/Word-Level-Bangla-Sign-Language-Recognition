@@ -42,8 +42,9 @@ def summarize_all(csv_path):
     print(f"\n{'='*100}")
     print(f"{'EXPERIMENT RESULTS SUMMARY':^100}")
     print(f"{'='*100}")
-    print(f"{'Experiment':<25} | {'WorkDir':<40} | {'Best Top1':<10} | {'Best Top5':<10} | {'Epoch':<5}")
-    print(f"{'-'*115}")
+    print("Top5@Top1 is the Top-5 value from the same epoch as Best Top1.")
+    print(f"{'Experiment':<25} | {'WorkDir':<32} | {'Best Top1':<10} | {'Top5@Top1':<10} | {'Best Top5':<10} | {'Epoch@Top1':<10} | {'Epoch@Top5':<10}")
+    print(f"{'-'*130}")
 
     for _, row in unique_runs.iterrows():
         exp = row['Experiment']
@@ -53,13 +54,24 @@ def summarize_all(csv_path):
         
         if run_data.empty: continue
         
+        run_data = run_data.copy()
+        run_data[acc_col] = pd.to_numeric(run_data[acc_col], errors='coerce')
+        if 'Top5_Acc' in run_data.columns:
+            run_data['Top5_Acc'] = pd.to_numeric(run_data['Top5_Acc'], errors='coerce')
+
         best_idx = run_data[acc_col].idxmax()
         best_row = run_data.loc[best_idx]
         
         top1 = f"{best_row[acc_col]:.4f}"
-        top5 = "N/A"
+        top5_at_top1 = "N/A"
+        best_top5 = "N/A"
+        epoch_top5 = "N/A"
         if 'Top5_Acc' in df.columns and pd.notna(best_row['Top5_Acc']):
-            top5 = f"{best_row['Top5_Acc']:.4f}"
+            top5_at_top1 = f"{best_row['Top5_Acc']:.4f}"
+            best_top5_idx = run_data['Top5_Acc'].idxmax()
+            best_top5_row = run_data.loc[best_top5_idx]
+            best_top5 = f"{best_top5_row['Top5_Acc']:.4f}"
+            epoch_top5 = best_top5_row['Epoch']
             
         epoch = best_row['Epoch']
         
@@ -67,9 +79,9 @@ def summarize_all(csv_path):
         wd_display = os.path.basename(wd.rstrip('/'))
         if not wd_display: wd_display = wd
         
-        print(f"{exp:<25} | {wd_display:<40} | {top1:<10} | {top5:<10} | {epoch:<5}")
+        print(f"{exp:<25} | {wd_display:<32} | {top1:<10} | {top5_at_top1:<10} | {best_top5:<10} | {str(epoch):<10} | {str(epoch_top5):<10}")
 
-    print(f"{'='*115}\n")
+    print(f"{'='*130}\n")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

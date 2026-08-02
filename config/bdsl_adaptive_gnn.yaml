@@ -22,7 +22,7 @@ test_feeder_args:
   data_path: ./data/bdsl/val_data.npy
   label_path: ./data/bdsl/val_label.pkl
   window_size: 120
-  random_choose: True
+  random_choose: False
   normalization: True
 
 # model (NEW ADAPTIVE MODEL)

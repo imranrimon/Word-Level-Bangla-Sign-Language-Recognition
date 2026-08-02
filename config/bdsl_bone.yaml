@@ -20,9 +20,10 @@ test_feeder_args:
   label_path: data/bdsl/val_label.pkl
   random_mirror: False
   normalization: True
+  is_vector: True
   lap_pe: False
   window_size: 120
-  random_choose: True
+  random_choose: False
 
 # model
 model: model.twin_attention.Model

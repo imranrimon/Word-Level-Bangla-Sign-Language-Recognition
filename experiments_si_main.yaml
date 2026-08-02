@@ -1,0 +1,31 @@
+# Signer-independent Option A sweep — RUNNABLE-NOW subset (pose-based).
+# Identical to experiments_si.yaml EXCEPT it omits the DINOv2 FlatTemporal
+# row (config/bdsl_dino_temporal_si.yaml), which requires Stage B.1 feature
+# extraction (data/bdsl_si_dino/) to exist first. A12 is launched separately
+# by scripts/run_full_si_program.bat once the Stage B.1 marker appears.
+#
+# Usage:
+#   python tools/run_multiseed.py --config experiments_si_main.yaml --seeds 0 1 2 --skip-existing
+experiments:
+  - name: "Pose-LSTM (SI)"
+    config: "config/bdsl_pose_lstm_si.yaml"
+  - name: "ST-GCN Vanilla (SI)"
+    config: "config/bdsl_st_gcn_vanilla_si.yaml"
+  - name: "Attention GNN (SI)"
+    config: "config/bdsl_gnn_si.yaml"
+  - name: "Adaptive GNN (SI)"
+    config: "config/bdsl_adaptive_gnn_si.yaml"
+  - name: "GNN + Bi-LSTM (SI)"
+    config: "config/bdsl_gnn_lstm_si.yaml"
+  - name: "GNN + Transformer (SI)"
+    config: "config/bdsl_gnn_transformer_si.yaml"
+  - name: "SLGTFormer (SI)"
+    config: "config/bdsl_slgtformer_si.yaml"
+  - name: "BlockGCN (SI)"
+    config: "config/bdsl_block_gcn_si.yaml"
+  - name: "BlockGCN + RQE (SI)"
+    config: "config/bdsl_block_gcn_rqe_si.yaml"
+  - name: "SLGTFormer + RQE (SI)"
+    config: "config/bdsl_slgtformer_rqe_si.yaml"
+  - name: "FlatTemporal (Pose, SI)"
+    config: "config/bdsl_pose_temporal_si.yaml"

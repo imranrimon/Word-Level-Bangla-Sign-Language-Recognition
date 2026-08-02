@@ -1,0 +1,99 @@
+Experiment_name: bdsl_block_gcn_cotrain_si
+
+# B3 ablation: joint co-training (shared BlockGCN backbone, 60-way target
+# head + 401-way auxiliary head) as the alternative to the sequential BPT
+# recipe. Run with:
+#   python main_cotrain.py --config config/bdsl_block_gcn_cotrain_si.yaml --seed 0
+#
+# Comparability contract vs BPT (recipe control):
+#   * identical backbone args, feeder args, optimizer, schedule, and epoch
+#     budget as config/bdsl_block_gcn_si.yaml (the from-scratch baseline);
+#   * BPT = bdsl_block_gcn_w401 pretrain (100 ep) + low-LR finetune (100 ep);
+#     co-training = 100 ep over target + aux jointly. Report both against
+#     from-scratch under the same target eval (BdSLW60-SI val/test).
+#   * per-epoch aux volume is controlled by aux_fraction (1.0 = all 38,876
+#     aux clips each epoch -> epoch ~7.8x the from-scratch epoch).
+
+model: model.block_gcn_multihead.Model
+model_args:
+  num_class: 60
+  num_class_aux: 401
+  num_point: 27
+  num_person: 1
+  graph: graph.sign_27.Graph
+  graph_args:
+    labeling_mode: 'spatial'
+  in_channels: 3
+  num_blocks: [2, 2, 2, 2]
+  stage_channels: [64, 128, 256, 256]
+  max_distance: 8
+
+# target = BdSLW60 signer-independent split (canonical)
+target_train_feeder_args:
+  data_path: data/bdsl_si/train_data.npy
+  label_path: data/bdsl_si/train_label.pkl
+  debug: False
+  random_choose: True
+  window_size: 120
+  random_shift: True
+  normalization: True
+  random_mirror: False
+  random_mirror_p: 0.0
+  is_vector: False
+  lap_pe: False
+
+target_val_feeder_args:
+  data_path: data/bdsl_si/val_data.npy
+  label_path: data/bdsl_si/val_label.pkl
+  random_mirror: False
+  normalization: True
+  is_vector: False
+  lap_pe: False
+  window_size: 120
+  random_choose: False
+
+target_test_feeder_args:
+  data_path: data/bdsl_si/test_data.npy
+  label_path: data/bdsl_si/test_label.pkl
+  random_mirror: False
+  normalization: True
+  is_vector: False
+  lap_pe: False
+  window_size: 120
+  random_choose: False
+
+# auxiliary = BdSLW401 (front view), authors' split, train portion only
+aux_train_feeder_args:
+  data_path: data/bdslw401_si/train_data.npy
+  label_path: data/bdslw401_si/train_label.pkl
+  debug: False
+  random_choose: True
+  window_size: 120
+  random_shift: True
+  normalization: True
+  random_mirror: False
+  random_mirror_p: 0.0
+  is_vector: False
+  lap_pe: False
+
+# co-training knobs
+aux_loss_weight: 1.0
+aux_fraction: 1.0
+
+# optim — identical to bdsl_block_gcn_si.yaml (recipe control)
+weight_decay: 0.0001
+base_lr: 0.1
+step: [60, 80]
+
+# training
+device: [0]
+batch_size: 32
+test_batch_size: 32
+num_epoch: 100
+nesterov: True
+warm_up_epoch: 5
+optimizer: SGD
+seed: 0
+
+num_worker: 0
+results_csv: results_final.csv

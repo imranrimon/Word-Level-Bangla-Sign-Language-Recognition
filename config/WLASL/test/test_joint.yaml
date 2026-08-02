@@ -22,7 +22,7 @@ test_feeder_args:
   normalization: True
   lap_pe: False
   debug: False
-  random_choose: True
+  random_choose: False
   window_size: 120
 
 # model

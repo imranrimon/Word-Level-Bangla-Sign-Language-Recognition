@@ -1,0 +1,41 @@
+Experiment_name: bdsl_shubert_pretrain_bdsl_asl
+
+# Variant B — cross-lingual SSL pretraining (BdSL + ASL = BdSLW401 +
+# BdSLW102_A + WLASL, 75,589 clips, 72/28 Bangla/ASL).
+# Paired with bdsl_shubert_pretrain_bdsl_only.yaml (Variant A = no ASL) for
+# the cross-lingual-SSL ablation in T5 of the main paper.
+#
+# Both variants share: stride_between_stages=False, pose_motion clustering,
+# --per-source-cap 200000 balanced k-means.
+
+backbone: model.block_gcn.Model
+backbone_args:
+  num_class: 60
+  num_point: 27
+  num_person: 1
+  graph: graph.sign_27.Graph
+  graph_args:
+    labeling_mode: 'spatial'
+  in_channels: 3
+  num_blocks: [2, 2, 2, 2]
+  stage_channels: [64, 128, 256, 256]
+  max_distance: 8
+  return_features: True
+  stride_between_stages: False
+
+pretrain:
+  manifest: data/ssl_pool_manifest_bdsl_asl.json
+  targets:  data/pretrain_kmeans_targets_bdsl_asl.npz
+  num_codes: 64
+  mask_ratio: 0.3
+  window_size: 120
+  feat_dim: 256
+
+base_lr: 0.0001
+weight_decay: 0.0001
+
+batch_size: 32
+num_epoch: 30
+save_interval: 5
+num_worker: 0
+log_every: 50

@@ -6,14 +6,14 @@ echo Running ALL Experiments sequentially
 echo ===================================================
 
 
-"C:\Users\rimon\anaconda3\envs\bdsl_graph\python.exe" -u tools/run_experiments.py --config experiments.yaml
+call conda run -n bdsl_graph --no-capture-output python -u tools/run_experiments.py --config experiments.yaml
 
 if errorlevel 1 goto error
 
 echo.
 echo ===================================================
 echo ALL EXPERIMENTS COMPLETED
-echo See results.csv for summary.
+echo See results_final.csv for summary.
 echo ===================================================
 pause
 exit /b 0

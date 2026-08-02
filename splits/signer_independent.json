@@ -1,0 +1,24 @@
+{
+  "schema": "bdslw60-signer-independent-v1",
+  "description": "Fixed signer-disjoint split of BdSLW60 for reproducible benchmarking. Train/val/test contain only signers who recorded the full 60-word vocabulary; partial-coverage signers are routed to a pretraining pool.",
+  "filename_pattern": "^U(\\d+)W(\\d+)([A-Z]*)(?:_(\\d+))?_trial_(\\d+)_([LR])\\.mp4$",
+  "splits": {
+    "train": [1, 4, 5, 6, 8, 9, 11, 12],
+    "val": [15],
+    "test": [2, 13],
+    "pretrain": [3, 7, 10, 14, 16, 17, 18]
+  },
+  "notes": {
+    "full_signers": [1, 2, 4, 5, 6, 8, 9, 11, 12, 13, 15],
+    "partial_signers": [3, 10],
+    "tiny_signers": [7, 14, 16, 17, 18],
+    "partial_tiny_assignment_rule": "Signers who recorded fewer than all 60 classes are excluded from train/val/test and routed to 'pretrain' so label distributions remain balanced; they form an unlabeled pool for self-supervised pretraining."
+  },
+  "measured_counts": {
+    "train":    {"signers": 8, "classes_covered": 60, "clips": 5748},
+    "val":      {"signers": 1, "classes_covered": 60, "clips": 655},
+    "test":     {"signers": 2, "classes_covered": 60, "clips": 1365},
+    "pretrain": {"signers": 7, "classes_covered": 38, "clips": 1539},
+    "total":    9307
+  }
+}

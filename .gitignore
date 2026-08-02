@@ -48,6 +48,7 @@ Word_level_Bangla_Sign_Language_Dataset/
 *.pdf
 
 # Logs & Temp Files
+logs/
 log.txt
 *.log
 best_results_temp.csv
@@ -56,3 +57,8 @@ summary_output.txt
 # Experiment Management (temp)
 experiments_rerun.yaml
 experiments_resume.yaml
+
+# Vendored third-party clones (their own git repos; transferred/cloned separately on HPC)
+external/
+# LOSO fold temp configs
+.tmp_loso/

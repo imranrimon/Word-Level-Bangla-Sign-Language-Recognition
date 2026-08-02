@@ -10,6 +10,7 @@ def run_experiments(config_file):
     
     experiments = data.get('experiments', [])
     print(f"Found {len(experiments)} experiments in {config_file}")
+    failed = []
     
     for i, exp in enumerate(experiments):
         name = exp.get('name', f"Experiment {i+1}")
@@ -42,18 +43,21 @@ def run_experiments(config_file):
             
             if process.returncode != 0:
                 print(f"\nExperiment {name} FAILED with exit code {process.returncode}")
-                # Optional: break or continue? User likely wants to run all.
-                # continue 
+                failed.append(name)
             else:
                 print(f"\nExperiment {name} COMPLETED SUCCESSFULLY.")
                 
         except Exception as e:
             print(f"An error occurred execution experiment {name}: {e}")
+            failed.append(name)
 
     print("\n" + "="*60)
     print("ALL EXPERIMENTS FINISHED.")
-    print("Check results.csv for summary of best metrics.")
+    print("Check results_final.csv for summary of best metrics.")
+    if failed:
+        print(f"Failed experiments: {', '.join(failed)}")
     print("="*60)
+    return 1 if failed else 0
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -61,6 +65,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     if os.path.exists(args.config):
-        run_experiments(args.config)
+        raise SystemExit(run_experiments(args.config))
     else:
         print(f"Config file {args.config} not found.")
+        raise SystemExit(1)

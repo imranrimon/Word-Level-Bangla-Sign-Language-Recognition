@@ -1,0 +1,14 @@
+# SLGTFormer sub-module ablations on the signer-independent split.
+# Each config toggles exactly one of the three SLGTFormer components off,
+# holding the shared recipe fixed (see docs/RECIPE_CONTROL.md). The full-model
+# reference row is "SLGTFormer (SI)" in experiments_si_main.yaml.
+#
+# Usage:
+#   python tools/run_multiseed.py --config experiments_si_ablations.yaml --seeds 0 1 2 --skip-existing
+experiments:
+  - name: "SLGTFormer - LGRPE (SI)"
+    config: "config/bdsl_slgtformer_no_lgrpe_si.yaml"
+  - name: "SLGTFormer - TTSA (SI)"
+    config: "config/bdsl_slgtformer_no_ttsa_si.yaml"
+  - name: "SLGTFormer - PAF (SI)"
+    config: "config/bdsl_slgtformer_no_paf_si.yaml"

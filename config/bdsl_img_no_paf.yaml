@@ -18,7 +18,8 @@ test_feeder_args:
   data_path: ./data/bdsl_img/val_data_filtered.npy
   label_path: ./data/bdsl_img/val_label_filtered.pkl
   window_size: 120
-  random_choose: True
+  random_choose: False
+  normalization: False
 
 # model
 model: model.twin_attention.Model

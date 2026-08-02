@@ -1,4 +1,4 @@
-name: slgtformer
+name: bdsl_graph
 channels:
   - pytorch
   - nvidia
@@ -11,8 +11,18 @@ dependencies:
   - torchvision
   - pyg
   - pytorch-scatter
+  - scipy
+  - pandas
+  - matplotlib
+  - scikit-learn
+  - seaborn
+  - pyyaml
+  - tqdm
+  - pytest
   - wandb
   - pip
   - pip:
     - timm
     - einops
+    - mediapipe
+    - opencv-python

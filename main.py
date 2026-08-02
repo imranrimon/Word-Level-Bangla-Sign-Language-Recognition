@@ -8,6 +8,7 @@ import yaml
 import pickle
 import traceback
 import csv # Added for CSV Logging
+import datetime
 from collections import OrderedDict
 # torch
 import torch
@@ -16,7 +17,6 @@ import torch.optim as optim
 from torch.autograd import Variable
 from tqdm import tqdm
 import shutil
-from torch.optim.lr_scheduler import ReduceLROnPlateau, MultiStepLR
 import random
 import inspect
 import torch.backends.cudnn as cudnn
@@ -24,11 +24,20 @@ import torch.nn.functional as F
 
 import wandb
 
-def init_seed(_):
-    torch.cuda.manual_seed_all(1)
-    torch.manual_seed(1)
-    np.random.seed(1)
-    random.seed(1)
+DEFAULT_WORK_DIR = './work_dir/temp'
+RESULT_COLUMNS = ['Timestamp', 'Experiment', 'Epoch', 'Top1_Acc',
+                  'Top5_Acc', 'Top5_Policy', 'WorkDir']
+TOP5_POLICY = 'same_epoch_as_logged_top1'
+
+def init_seed(seed):
+    # Multi-seed support: the previous implementation hard-coded seed=1 and
+    # ignored the argument. We now honor the caller-supplied seed so that
+    # tools/run_multiseed.py can produce 3-seed mean +/- std benchmarks.
+    seed = int(seed) if seed is not None else 1
+    torch.cuda.manual_seed_all(seed)
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+    random.seed(seed)
     # torch.backends.cudnn.enabled = False
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
@@ -40,7 +49,7 @@ def get_parser():
         description='Decoupling Graph Convolution Network with DropGraph Module')
     parser.add_argument(
         '--work-dir',
-        default='./work_dir/temp',
+        default=DEFAULT_WORK_DIR,
         help='the work folder for storing results')
 
     parser.add_argument('-model_saved_name', default='')
@@ -178,6 +187,15 @@ def get_parser():
     parser.add_argument('--wandb_name', default='test')
     parser.add_argument('--wandb_entity', default='irvl')
     parser.add_argument('--wandb_project', default='SLGTformer First Run')
+    parser.add_argument(
+        '--timestamp-run',
+        type=str2bool,
+        default=False,
+        help='append a timestamp to the resolved work directory')
+    parser.add_argument(
+        '--results-csv',
+        default='results_final.csv',
+        help='CSV file used for experiment metrics')
 
     return parser
 
@@ -189,22 +207,8 @@ class Processor():
 
     def __init__(self, arg):
 
-        arg.model_saved_name = "./save_models/" + arg.Experiment_name
-        arg.work_dir = "./work_dir/" + arg.Experiment_name
         self.arg = arg
         self.save_arg()
-        if arg.phase == 'train':
-            if not arg.train_feeder_args['debug']:
-                if os.path.isdir(arg.model_saved_name):
-                    print('log_dir: ', arg.model_saved_name, 'already exist')
-                    answer = input('delete it? y/n:')
-                    if answer == 'y':
-                        shutil.rmtree(arg.model_saved_name)
-                        print('Dir removed: ', arg.model_saved_name)
-                        input(
-                            'Refresh the website of tensorboard by pressing any keys')
-                    else:
-                        print('Dir not removed: ', arg.model_saved_name)
 
         self.global_step = 0
         self.load_model()
@@ -297,7 +301,7 @@ class Processor():
                 decay_mult = 0.0 if 'bias' in key else 1.0
 
                 lr_mult = 1.0
-                weight_decay = 1e-4
+                weight_decay = self.arg.weight_decay
 
                 params += [{'params': value, 'lr': self.arg.base_lr, 'lr_mult': lr_mult,
                             'decay_mult': decay_mult, 'weight_decay': weight_decay}]
@@ -319,19 +323,13 @@ class Processor():
             if 'optimizer' in ckpt.keys():
                 opt_state_dict = ckpt['optimizer']
                 self.optimizer.load_state_dict(opt_state_dict)
-            
-        self.lr_scheduler = ReduceLROnPlateau(self.optimizer, mode='min', factor=0.1,
-                                              patience=10,
-                                              threshold=1e-4, threshold_mode='rel',
-                                              cooldown=0)
 
     def save_arg(self):
         # save arg
         arg_dict = vars(self.arg)
 
-        if not os.path.exists(self.arg.work_dir):
-            os.makedirs(self.arg.work_dir)
-            os.makedirs(self.arg.work_dir + '/eval_results')
+        os.makedirs(self.arg.work_dir, exist_ok=True)
+        os.makedirs(os.path.join(self.arg.work_dir, 'eval_results'), exist_ok=True)
 
         with open('{}/config.yaml'.format(self.arg.work_dir), 'w') as f:
             yaml.dump(arg_dict, f)
@@ -498,18 +496,18 @@ class Processor():
                                         str(x) + ',' + str(true[i]) + '\n')
                 score = np.concatenate(score_frag)
 
-                if 'UCLA' in arg.Experiment_name:
+                if 'UCLA' in self.arg.Experiment_name:
                     self.data_loader[ln].dataset.sample_name = np.arange(
                         len(score))
 
                 accuracy = self.data_loader[ln].dataset.top_k(score, 1)
+                top5_accuracy = self.data_loader[ln].dataset.top_k(score, 5)
+                score_dict = dict(
+                    zip(self.data_loader[ln].dataset.sample_name, score))
                 if accuracy > self.best_acc:
                     self.best_acc = accuracy
-                    score_dict = dict(
-                        zip(self.data_loader[ln].dataset.sample_name, score))
 
-                    with open('./work_dir/' + arg.Experiment_name + '/eval_results/best_acc' + '.pkl'.format(
-                            epoch, accuracy), 'wb') as f:
+                    with open(os.path.join(self.arg.work_dir, 'eval_results', 'best_acc.pkl'), 'wb') as f:
                         pickle.dump(score_dict, f)
 
                 print('Eval Accuracy: ', accuracy,
@@ -518,20 +516,16 @@ class Processor():
                 # ------------------------------------------------------------------
                 # NEW: Log Best Result to CSV
                 # ------------------------------------------------------------------
-                csv_path = 'results_final.csv'
-                file_exists = os.path.isfile(csv_path)
-                with open(csv_path, mode='a', newline='') as f:
-                    writer = csv.writer(f)
-                    if not file_exists:
-                        writer.writerow(['Timestamp', 'Experiment', 'Epoch', 'Top1_Acc', 'Top5_Acc', 'WorkDir'])
-                    writer.writerow([
-                        datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                        self.arg.Experiment_name,
-                        epoch,
-                        f"{accuracy:.4f}",
-                        f"{self.data_loader[ln].dataset.top_k(score, 5):.4f}",
-                        self.arg.work_dir
-                    ])
+                csv_path = self.arg.results_csv
+                append_result_row(csv_path, {
+                    'Timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                    'Experiment': self.arg.Experiment_name,
+                    'Epoch': epoch,
+                    'Top1_Acc': f"{accuracy:.4f}",
+                    'Top5_Acc': f"{top5_accuracy:.4f}",
+                    'Top5_Policy': TOP5_POLICY,
+                    'WorkDir': self.arg.work_dir,
+                })
                 print(f"Logged best accuracy to {csv_path}")
                 # ------------------------------------------------------------------
 
@@ -540,17 +534,16 @@ class Processor():
                     'eval_loss': np.mean(loss_value),
                 })
 
-                score_dict = dict(
-                    zip(self.data_loader[ln].dataset.sample_name, score))
                 self.print_log('\tMean {} loss of {} batches: {}.'.format(
                     ln, len(self.data_loader[ln]), np.mean(loss_value)))
                 for k in self.arg.show_topk:
                     self.print_log('\tTop{}: {:.2f}%'.format(
                         k, 100 * self.data_loader[ln].dataset.top_k(score, k)))
 
-                with open('./work_dir/' + arg.Experiment_name + '/eval_results/epoch_' + str(epoch) + '_' + str(accuracy) + '.pkl'.format(
-                        epoch, accuracy), 'wb') as f:
-                    pickle.dump(score_dict, f)
+                if save_score:
+                    score_name = 'epoch_{}_top1_{:.6f}.pkl'.format(epoch, accuracy)
+                    with open(os.path.join(self.arg.work_dir, 'eval_results', score_name), 'wb') as f:
+                        pickle.dump(score_dict, f)
         return np.mean(loss_value)
     def start(self):
         if self.arg.phase == 'train':
@@ -567,19 +560,19 @@ class Processor():
 
                 self.train(epoch, save_model=save_model)
 
-                if save_model:
+                should_eval = ((epoch + 1) % self.arg.eval_interval == 0) or (
+                    epoch + 1 == self.arg.num_epoch)
+                if should_eval:
                     val_loss = self.eval(
                         epoch,
                         save_score=self.arg.save_score,
                         loader_name=['test'])
 
-                # self.lr_scheduler.step(val_loss)
-
             print('best accuracy: ', self.best_acc,
                   ' model_name: ', self.arg.model_saved_name)
 
         elif self.arg.phase == 'test':
-            if not self.arg.test_feeder_args['debug']:
+            if not self.arg.test_feeder_args.get('debug', False):
                 wf = self.arg.model_saved_name + '_wrong.txt'
                 rf = self.arg.model_saved_name + '_right.txt'
             else:
@@ -595,12 +588,67 @@ class Processor():
 
 
 def str2bool(v):
+    if isinstance(v, bool):
+        return v
     if v.lower() in ('yes', 'true', 't', 'y', '1'):
         return True
     elif v.lower() in ('no', 'false', 'f', 'n', '0'):
         return False
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
+
+
+def resolve_run_paths(arg):
+    exp_name = arg.Experiment_name or os.path.splitext(os.path.basename(arg.config))[0] or 'temp'
+    arg.Experiment_name = exp_name
+
+    configured_work_dir = arg.work_dir
+    if not configured_work_dir or configured_work_dir == DEFAULT_WORK_DIR:
+        configured_work_dir = os.path.join('.', 'work_dir', exp_name)
+
+    work_dir = configured_work_dir.rstrip('/\\')
+    timestamped = False
+    if arg.timestamp_run and arg.phase == 'train':
+        timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+        work_dir = f"{work_dir}_{timestamp}"
+        timestamped = True
+
+    original_model_saved_name = arg.model_saved_name
+    if not original_model_saved_name:
+        model_saved_name = os.path.join(work_dir, f'{exp_name}_model')
+    elif timestamped and os.path.normpath(original_model_saved_name).startswith(os.path.normpath(configured_work_dir)):
+        model_saved_name = os.path.join(work_dir, os.path.basename(original_model_saved_name))
+    else:
+        model_saved_name = original_model_saved_name
+
+    arg.work_dir = os.path.normpath(work_dir)
+    arg.model_saved_name = os.path.normpath(model_saved_name)
+    return arg
+
+
+def append_result_row(csv_path, row):
+    if os.path.exists(csv_path) and os.path.getsize(csv_path) > 0:
+        with open(csv_path, newline='') as f:
+            reader = csv.DictReader(f)
+            existing_rows = list(reader)
+            existing_fields = reader.fieldnames or []
+
+        if existing_fields != RESULT_COLUMNS:
+            with open(csv_path, 'w', newline='') as f:
+                writer = csv.DictWriter(f, fieldnames=RESULT_COLUMNS)
+                writer.writeheader()
+                for existing in existing_rows:
+                    upgraded = {key: existing.get(key, '') for key in RESULT_COLUMNS}
+                    if not upgraded['Top5_Policy']:
+                        upgraded['Top5_Policy'] = TOP5_POLICY
+                    writer.writerow(upgraded)
+
+    file_exists = os.path.isfile(csv_path) and os.path.getsize(csv_path) > 0
+    with open(csv_path, mode='a', newline='') as f:
+        writer = csv.DictWriter(f, fieldnames=RESULT_COLUMNS)
+        if not file_exists:
+            writer.writeheader()
+        writer.writerow(row)
 
 
 def import_class(name):
@@ -628,30 +676,10 @@ if __name__ == '__main__':
 
     arg = parser.parse_args()
     
-    # ------------------------------------------------------------------
-    # NEW: Auto-timestamp work_dir to separate runs
-    # ------------------------------------------------------------------
-    import datetime
-    timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-    
-    # Check if we are starting a NEW training (phase=train)
-    if arg.phase == 'train':
-        # Append timestamp to work_dir
-        if arg.work_dir.endswith('/'):
-            arg.work_dir = arg.work_dir[:-1]
-        arg.work_dir = f"{arg.work_dir}_{timestamp}/"
-        
-        # Update model_saved_name to match new dir
-        # e.g. ./work_dir/bdsl_img/bdsl_img_model -> ./work_dir/bdsl_img_TIMESTAMP/bdsl_img_model
-        dir_name = os.path.dirname(arg.model_saved_name)
-        base_name = os.path.basename(arg.model_saved_name)
-        # We assume model_saved_name usually sits inside work_dir. 
-        # Simpler approach: just repoint it to the new work_dir
-        arg.model_saved_name = os.path.join(arg.work_dir, base_name)
-        
-        print(f"Verified Work Dir: {arg.work_dir}")
-        print(f"Verified Model Save Path: {arg.model_saved_name}")
+    arg = resolve_run_paths(arg)
+    print(f"Work Dir: {arg.work_dir}")
+    print(f"Model Save Prefix: {arg.model_saved_name}")
 
-    init_seed(0)
+    init_seed(arg.seed)
     processor = Processor(arg)
     processor.start()

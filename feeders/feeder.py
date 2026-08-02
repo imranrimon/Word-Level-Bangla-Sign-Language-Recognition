@@ -16,7 +16,9 @@ flip_index = np.concatenate(([0,2,1,4,3,6,5],[17,18,19,20,21,22,23,24,25,26],[7,
 class Feeder(Dataset):
     def __init__(self, data_path, label_path,
                  random_choose=False, random_shift=False, random_move=False,
-                 window_size=-1, normalization=False, debug=False, use_mmap=True, random_mirror=False, random_mirror_p=0.5, is_vector=False, lap_pe=False):
+                 window_size=-1, normalization=False, debug=False, use_mmap=True,
+                 random_mirror=False, random_mirror_p=0.5, is_vector=False,
+                 lap_pe=False, mirror_width=None, random_shift_limit=None):
         """
         
         :param data_path: 
@@ -45,6 +47,8 @@ class Feeder(Dataset):
         self.load_data()
         self.is_vector = is_vector
         self.lap_pe = lap_pe
+        self.mirror_width = mirror_width
+        self.random_shift_limit = random_shift_limit
         if normalization:
             self.get_mean_map()
 
@@ -116,6 +120,8 @@ class Feeder(Dataset):
 
         if self.random_choose:
             data_numpy = tools.random_choose(data_numpy, self.window_size)
+        elif self.window_size > 0:
+            data_numpy = tools.center_choose(data_numpy, self.window_size)
             
         if self.random_mirror:
             if random.random() > self.random_mirror_p:
@@ -124,7 +130,7 @@ class Feeder(Dataset):
                 if self.is_vector:
                     data_numpy[0,:,:,:] = - data_numpy[0,:,:,:]
                 else: 
-                    data_numpy[0,:,:,:] = 512 - data_numpy[0,:,:,:]
+                    data_numpy[0,:,:,:] = self._mirror_x(data_numpy[0,:,:,:])
 
         if self.normalization:
             # data_numpy = (data_numpy - self.mean_map) / self.std_map
@@ -137,12 +143,12 @@ class Feeder(Dataset):
                 data_numpy[1,:,:,:] = data_numpy[1,:,:,:] - data_numpy[1,:,0,0].mean(axis=0)
 
         if self.random_shift:
-            if self.is_vector:
-                data_numpy[0,:,0,:] += random.random() * 20 - 10.0
-                data_numpy[1,:,0,:] += random.random() * 20 - 10.0
-            else:
-                data_numpy[0,:,:,:] += random.random() * 20 - 10.0
-                data_numpy[1,:,:,:] += random.random() * 20 - 10.0
+            limit = self._shift_limit(data_numpy)
+            if not self.is_vector:
+                x_mask = data_numpy[0,:,:,:] != 0
+                y_mask = data_numpy[1,:,:,:] != 0
+                data_numpy[0,:,:,:][x_mask] += random.random() * 2 * limit - limit
+                data_numpy[1,:,:,:][y_mask] += random.random() * 2 * limit - limit
 
 
         # if self.random_shift:
@@ -170,6 +176,30 @@ class Feeder(Dataset):
             return data, label, index
 
         return data_numpy, label, index
+
+    def _uses_normalized_coordinates(self, data_numpy):
+        if self.mirror_width is not None:
+            return False
+        xy = data_numpy[:2]
+        non_zero = xy[np.nonzero(xy)]
+        if non_zero.size == 0:
+            return True
+        return non_zero.min() >= -1.0 and non_zero.max() <= 2.0
+
+    def _mirror_x(self, x_values):
+        if self.mirror_width is not None:
+            mirrored = self.mirror_width - x_values
+            return np.where(x_values == 0, 0, mirrored)
+        if self._uses_normalized_coordinates(x_values[np.newaxis, ...]):
+            mirrored = 1.0 - x_values
+        else:
+            mirrored = 512 - x_values
+        return np.where(x_values == 0, 0, mirrored)
+
+    def _shift_limit(self, data_numpy):
+        if self.random_shift_limit is not None:
+            return self.random_shift_limit
+        return 0.05 if self._uses_normalized_coordinates(data_numpy) else 10.0
 
     def top_k(self, score, top_k):
         rank = score.argsort()

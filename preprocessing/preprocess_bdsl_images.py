@@ -12,8 +12,6 @@ from tqdm import tqdm
 # Create a module path for loading 'feeders' from the parent directory
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from feeders.tools import openpose_matchrse
-
 # Define Keypoint Mapping
 # Body (0-6)
 BODY_INDICES = [0, 12, 11, 14, 13, 16, 15]

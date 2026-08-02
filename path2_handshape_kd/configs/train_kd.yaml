@@ -1,0 +1,75 @@
+Experiment_name: bdsl_block_gcn_kd_si
+
+# Path 2 — BlockGCN + handshape-teacher knowledge distillation.
+# Pose comes from data/bdsl_si/ (the SI BlockGCN training data).
+# Teacher features come from path1_bangla_dinov2/extract_features.py output
+# (DINOv2-LoRA pretrained on the aggregated Bangla handshape corpus).
+# As a fallback before Path 1 finishes, point teacher_data_path at
+# data/bdsl_si_dino/ (Option B's stock DINOv2 features) — same shape, just
+# generic ImageNet pretraining instead of Bangla domain adaptation.
+
+train_feeder_args:
+  pose_data_path:        data/bdsl_si/train_data.npy
+  pose_label_path:       data/bdsl_si/train_label.pkl
+  teacher_data_path:     data/bdsl_si_bdino/train_data.npy   # or data/bdsl_si_dino/
+  teacher_label_path:    data/bdsl_si_bdino/train_label.pkl
+  random_choose: True
+  random_shift: True
+  random_mirror: False
+  random_mirror_p: 0.0
+  window_size: 120
+  normalization: True
+  is_vector: False
+  lap_pe: False
+  teacher_region_indices: [0, 1]   # 0=L hand, 1=R hand; drops face
+
+test_feeder_args:
+  pose_data_path:        data/bdsl_si/val_data.npy
+  pose_label_path:       data/bdsl_si/val_label.pkl
+  teacher_data_path:     data/bdsl_si_bdino/val_data.npy
+  teacher_label_path:    data/bdsl_si_bdino/val_label.pkl
+  window_size: 120
+  random_choose: False
+  normalization: True
+  teacher_region_indices: [0, 1]
+
+model_args:
+  num_class: 60
+  num_point: 27
+  num_person: 1
+  graph: graph.sign_27.Graph
+  graph_args:
+    labeling_mode: 'spatial'
+  in_channels: 3
+  num_blocks: [2, 2, 2, 2]
+  stage_channels: [64, 128, 256, 256]
+  max_distance: 8
+  teacher_dim: 768                 # 384 (DINOv2 small) * 2 hands
+
+# KD specifics
+# kd_loss options (audit fix #11):
+#   cosine          - 1 - cos_sim(student, teacher); magnitude-invariant. DEFAULT.
+#   mse_normalized  - L2-normalize both then MSE; equivalent to a scaled cosine.
+#   mse             - raw MSE; AVOID unless teacher feats are unit-normalized.
+# kd_weight: cosine loss in [0,2], CE loss in [0, log(num_class) ~= 4]. The
+# loss-magnitude mismatch means kd_weight=1.0 lets CE dominate early training
+# and KD dominate late training. Sweep {0.1, 1.0, 10.0} once for the headline
+# Path 2 row; we have not validated that 1.0 is optimal.
+kd_loss: cosine
+kd_weight: 1.0
+
+# Optim (SGD-Nesterov same as plain BlockGCN config)
+weight_decay: 0.0001
+base_lr: 0.1
+step: [60, 80]
+optimizer: SGD
+nesterov: True
+
+# Training
+batch_size: 32
+test_batch_size: 32
+num_epoch: 100
+warm_up_epoch: 5
+eval_interval: 5
+save_interval: 10
+num_worker: 0
