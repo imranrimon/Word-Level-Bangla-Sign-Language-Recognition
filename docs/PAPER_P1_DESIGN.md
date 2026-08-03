@@ -17,6 +17,49 @@ signer-independent** protocol, transfers to **low-resource** target sign
 languages — beating monolingual SSL and from-scratch, and generalizing across
 ≥2 target languages and signer-disjoint LOSO.
 
+## Conceptual core (the fundamental contribution)
+
+Everything empirical below is evidence for **one idea**:
+
+> **In sign language, articulatory *form* is cross-linguistically universal and
+> signer-invariant — while the identity shortcut and the low-resource bottleneck
+> are both failures to learn form. Masked pose pretraining across unrelated sign
+> languages learns a transferable, identity-free representation that fixes both at
+> once.**
+
+Three fundamental, *falsifiable* claims:
+
+1. **The wrong-metric reframe.** Reported SLR accuracy conflates *what sign* with
+   *who signs*; random splits reward the latter. We make signer-identity leakage a
+   first-class, measurable, localizable, **removable** property — reframing the goal
+   from accuracy to *signer-invariant* accuracy.
+2. **The universality-of-form hypothesis** (deepest, least-claimed). Sign languages
+   are mutually unintelligible *lexicons* but share a substrate of manual-articulatory
+   dynamics (handshape inventories, movement primitives, coarticulation — the
+   "phonology" of sign). So a cross-lingual masked pose model learns a **signer- and
+   language-agnostic motor model of signing**, not a shared vocabulary — which is why
+   it transfers to an *unseen, lexically-disjoint* low-resource language.
+3. **The objective-choice insight.** In a domain with an identity shortcut, the SSL
+   objective decides *what leaks*: masked reconstruction of low-level articulatory
+   units forces encoding of *how a sign is formed*, whereas contrastive/instance
+   objectives can satisfy themselves with signer-discriminative features (the shortcut
+   itself). This is *why* masked > contrastive **here specifically**.
+
+**The unifying move:** the shortcut and the low-resource problem are the *same disease*
+— insufficient signer/form diversity — and cross-lingual masked pose pretraining is a
+*single cure*: it injects articulatory-form diversity across languages, simultaneously
+filling the data gap and diluting the signer signal.
+
+### Falsifiable predictions → experiment
+| Fundamental claim | Prediction | Test |
+|---|---|---|
+| Wrong-metric / shortcut is real & fixable | large SI collapse; interventions shrink it | SI vs random (22.46 pp); pool/objective ablations |
+| Form is universal & signer-invariant | cross-lingual > monolingual **despite zero shared signs**; gain tracks articulatory (not lexical) overlap | the gate (xling vs mono vs scratch) across 3 languages + LOSO |
+| Masked learns form, contrastive learns instance | masked > contrastive at matched setup; signer-identity harder to decode from masked reps | SSL-SLR head-to-head + a signer-decodability probe |
+
+Framed this way, the gate is not "an accuracy bump" but **a scientific test of whether
+sign form is universal** — which is what makes it top-venue, not incremental.
+
 ## Draft abstract (v0 — brackets = fill from results)
 > Isolated sign-language recognition (ISLR) for low-resource languages is bottlenecked
 > twice: by data scarcity, and by an evaluation shortcut in which models memorize
