@@ -50,16 +50,27 @@ from preprocessing.bdsl_signer_split import (  # noqa: E402
 
 
 def _cached_or_process(task, cache_dir):
-    """Run MediaPipe on one clip, falling back to a cached .npz if present."""
+    """Run MediaPipe on one clip, falling back to a cached .npz if present.
+
+    Negative-caching: clips that fail to open/extract (e.g. corrupt/truncated
+    downloads that make ffmpeg hang for ~97 s before "moov atom not found")
+    get a `<cache-dir>/.failed/<base>.bad` marker, so re-runs skip them
+    instantly instead of re-paying the ffmpeg open-timeout. Markers are
+    class-independent (keyed by basename), so they can be pre-seeded from a log.
+    """
     file_path, label, label_name = task
     cache_path = None
+    fail_path = None
     if cache_dir:
-        rel = os.path.splitext(os.path.basename(file_path))[0] + ".npz"
-        cache_path = os.path.join(cache_dir, label_name, rel)
+        base = os.path.splitext(os.path.basename(file_path))[0]
+        cache_path = os.path.join(cache_dir, label_name, base + ".npz")
+        fail_path = os.path.join(cache_dir, ".failed", base + ".bad")
         if os.path.exists(cache_path):
             with np.load(cache_path) as handle:
                 data = handle["data"]
             return (data, label, label_name, file_path)
+        if os.path.exists(fail_path):
+            return None  # known-bad clip; skip without invoking ffmpeg
 
     # Lazy-import so `--dry-run` avoids pulling mediapipe in.
     from preprocessing.preprocess_bdsl import process_video
@@ -67,8 +78,11 @@ def _cached_or_process(task, cache_dir):
         result = process_video(task)
     except Exception:
         traceback.print_exc()
-        return None
+        result = None
     if result is None:
+        if fail_path is not None:
+            os.makedirs(os.path.dirname(fail_path), exist_ok=True)
+            open(fail_path, "a").close()  # negative-cache marker
         return None
 
     if cache_path is not None:
