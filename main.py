@@ -510,6 +510,15 @@ class Processor():
                     with open(os.path.join(self.arg.work_dir, 'eval_results', 'best_acc.pkl'), 'wb') as f:
                         pickle.dump(score_dict, f)
 
+                    # Also persist the best MODEL (loadable via --weights). Per-epoch
+                    # checkpoints follow save_interval and can miss the best epoch, so
+                    # a run's peak model was otherwise unrecoverable.
+                    best_weights = OrderedDict(
+                        [[k.split('module.')[-1], v.cpu()]
+                         for k, v in self.model.state_dict().items()])
+                    torch.save({'weights': best_weights, 'epoch': epoch, 'acc': accuracy},
+                               self.arg.model_saved_name + '-best.pt')
+
                 print('Eval Accuracy: ', accuracy,
                     ' model: ', self.arg.model_saved_name)
 
