@@ -93,11 +93,11 @@ shortcut finding "is not a paper" on its own).
 - **Refuted:** Uni-Sign as "monolingual CSL generative pretraining" (vote 1-2) —
   do not assert its exact pretraining modality; only its pose-only numbers.
 - **Unverified:** SignBart 68.0 pose-only WLASL2000 (anomalous vs peers).
-- **Not yet covered** (deferred to follow-up pass `wf_0436ed18-4be`): (a) whether
-  Bangla is genuinely unclaimed at top venues + strongest existing BdSL result &
-  protocol; (b) handshape-KD prior art (Koller lineage → 2026); (c)
-  generative/diffusion/retrieval/pose-tokenization framings. **This section to be
-  appended when that pass returns.**
+- **Not covered** (follow-up pass `wf_0436ed18-4be` **stalled and never returned**):
+  (a) whether Bangla is genuinely unclaimed at top venues + strongest existing BdSL
+  result & protocol; (b) handshape-KD prior art (Koller lineage → 2026); (c)
+  generative/diffusion/retrieval/pose-tokenization framings. **Still open** — see the
+  open items in §6.
 
 ## 5. Primary sources (verified pass)
 
@@ -116,3 +116,52 @@ shortcut finding "is not a paper" on its own).
 **Stats:** 5 angles · 22 sources fetched · 103 claims → 25 verified (24 confirmed,
 1 killed) · 104 agents. Re-verify any single number against its primary PDF
 before camera-ready.
+
+---
+
+## 6. Novelty re-check — 2026-08-03 (run `wf_1f4b24f8-989`)
+
+**✅ VERDICT: the four-way niche (`masked × cross-lingual × fine-tuned × SI`, pose,
+low-resource target) is STILL UNCLAIMED — but NARROWED.** No verified paper occupies
+all four axes jointly. **Safe to submit with the scoping tweaks below.** (99 agents,
+17 sources, 21/25 claims verified.)
+
+### New post-cutoff threats (cite + disposition explicitly)
+
+| Work | Venue/date | Owns | **Misses** |
+|---|---|---|---|
+| **SIGNET** ✅ (arXiv 2606.28626) | ECCV 2026 | cross-lingual + low-resource + fine-tuned (pose SLT, transfers to unseen DGS) | **masked**, **SI**, and is *translation* not isolated-SLR |
+| **SignMAE** ✅ (arXiv 2605.02094) | May 2026 | masked-reconstructive + fine-tuned | **cross-lingual** (monolingual per-lang encoders), pose-only (RGB+heatmap), **SI** |
+
+SIGNET is the single closest new threat — the "isn't cross-lingual already done?" bait.
+
+### Soft spots (would weaken novelty if a reviewer pushes)
+
+- ⚠️ **Don't separate from SSL-SLR via "fine-tuned vs linear-probe"** — its v2 (Mar 2026)
+  *may* add fine-tuned eval (contested 1-2). Separate via the **masked** and **SI** axes.
+- ⚠️ **Don't quote Sigma 64.54 as "pose-only ISLR-SSL SOTA"** — refuted 0-3 (Sigma is a
+  translation foundation model; WLASL2000 is one downstream task). Uni-Sign 63.13 also
+  needs table-level re-verification before quoting as a headline comparator.
+
+### Scoping rules that keep it novel
+1. State **all four axes jointly** — never claim on a three-axis subset (cross-lingual+
+   fine-tuned+low-resource = SIGNET's; masked+fine-tuned = BEST/SignMAE's).
+2. Foreground **masked-reconstructive-on-pose** and the **formal SI protocol** — the SI
+   axis is the single most defensible (none of the closest works adopt one).
+3. Frame the target as **isolated word-level SLR** (vs SIGNET/Sigma = translation).
+
+### Still open (pre-submission checks)
+- SHuBERT 2026 follow-ups adding cross-lingual/SI? · a firmly-verified apples-to-apples
+  pose-only ISLR-SSL SOTA number · any 2025-26 SI isolated-SLR benchmark or Bangla/
+  South-Asian top-venue paper that would collide.
+
+### Sources (re-check)
+- SIGNET — https://arxiv.org/abs/2606.28626 (ECCV 2026) ✅
+- SignMAE — https://arxiv.org/abs/2605.02094 (May 2026) ✅
+- SSL-SLR v2 — https://arxiv.org/abs/2509.05188 ✅ · Sigma v3 — https://arxiv.org/abs/2509.21223 ✅
+- BEST — https://ojs.aaai.org/index.php/AAAI/article/view/25470 (AAAI 2023) ✅
+- Cross-lingual TL (iconicity) — https://arxiv.org/pdf/2603.03316 · few-shot fingerspelling — https://arxiv.org/html/2603.09213
+
+**Re-run this check again immediately before submission** — SIGNET & SignMAE both
+post-date the Jan-2026 cutoff; the most likely way the niche gets claimed is a masked-pose
+method adding a cross-lingual or SI result in a revision.
