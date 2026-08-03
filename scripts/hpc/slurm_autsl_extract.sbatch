@@ -9,7 +9,7 @@
 #SBATCH -c 32
 #SBATCH -n 1
 #SBATCH -p gpu_2day
-#SBATCH -t 12:00:00
+#SBATCH -t 24:00:00
 #SBATCH -o slurm_logs/%x_%j.out
 #SBATCH -e slurm_logs/%x_%j.err
 
