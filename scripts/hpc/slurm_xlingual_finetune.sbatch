@@ -38,12 +38,18 @@ bb_for() { case "$1" in mono) echo "$MONO";; xling) echo "$XLING";; pool) echo "
 echo "TARGET=$TARGET CONDS='$CONDS' SEEDS='$SEEDS' TEST_CONFIG='${TEST_CONFIG:-}'"
 for s in $SEEDS; do
   for cond in $CONDS; do
-    bb=$(bb_for "$cond")
-    if [ -z "$bb" ] || [ ! -f "$bb" ]; then echo "FATAL: backbone for '$cond' missing ($bb)"; exit 1; fi
+    if [ "$cond" != "scratch" ]; then
+      bb=$(bb_for "$cond")
+      if [ -z "$bb" ] || [ ! -f "$bb" ]; then echo "FATAL: backbone for '$cond' missing ($bb)"; exit 1; fi
+    fi
     exp="${TARGET}_${cond}_seed${s}"
     echo "=== $exp (init from $cond) ==="
-    python -u main.py --config "config/${TARGET}.yaml" --seed "$s" \
-      --weights "$bb" --ignore-weights fc.weight fc.bias -Experiment_name "$exp"
+    if [ "$cond" = "scratch" ]; then
+      python -u main.py --config "config/${TARGET}.yaml" --seed "$s" -Experiment_name "$exp"
+    else
+      python -u main.py --config "config/${TARGET}.yaml" --seed "$s" \
+        --weights "$bb" --ignore-weights fc.weight fc.bias -Experiment_name "$exp"
+    fi
     if [ -n "${TEST_CONFIG:-}" ]; then
       W="work_dir/${exp}/${exp}_model-best.pt"
       if [ -f "$W" ]; then
