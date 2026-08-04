@@ -114,6 +114,10 @@ def get_parser():
         '--test-feeder-args',
         default=dict(),
         help='the arguments of data loader for test')
+    parser.add_argument(
+        '--train-fraction', type=float, default=1.0,
+        help='fraction of the TRAIN set to keep (data-efficiency curve); '
+             'injected into train_feeder_args as data_fraction when <1.0')
 
     # model
     parser.add_argument('--model', default=None, help='the model will be used')
@@ -223,6 +227,10 @@ class Processor():
     def load_data(self):
         Feeder = import_class(self.arg.feeder)
         self.data_loader = dict()
+        # Data-efficiency curve: keep only a fraction of the train set.
+        if float(getattr(self.arg, 'train_fraction', 1.0)) < 1.0:
+            self.arg.train_feeder_args['data_fraction'] = float(self.arg.train_fraction)
+            self.arg.train_feeder_args['fraction_seed'] = 42
         if self.arg.phase == 'train':
             self.data_loader['train'] = torch.utils.data.DataLoader(
                 dataset=Feeder(**self.arg.train_feeder_args),

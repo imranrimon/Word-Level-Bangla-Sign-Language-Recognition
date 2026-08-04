@@ -18,7 +18,8 @@ class Feeder(Dataset):
                  random_choose=False, random_shift=False, random_move=False,
                  window_size=-1, normalization=False, debug=False, use_mmap=True,
                  random_mirror=False, random_mirror_p=0.5, is_vector=False,
-                 lap_pe=False, mirror_width=None, random_shift_limit=None):
+                 lap_pe=False, mirror_width=None, random_shift_limit=None,
+                 data_fraction=1.0, fraction_seed=42):
         """
         
         :param data_path: 
@@ -45,6 +46,8 @@ class Feeder(Dataset):
         self.random_mirror = random_mirror
         self.random_mirror_p = random_mirror_p
         self.load_data()
+        if data_fraction is not None and float(data_fraction) < 1.0:
+            self._subsample(float(data_fraction), int(fraction_seed))
         self.is_vector = is_vector
         self.lap_pe = lap_pe
         self.mirror_width = mirror_width
@@ -100,6 +103,27 @@ class Feeder(Dataset):
             self.label = self.label[0:100]
             self.data = self.data[0:100]
             self.sample_name = self.sample_name[0:100]
+
+    def _subsample(self, frac, seed):
+        """Keep a stratified `frac` of the train set (in-memory, no file I/O).
+
+        Deterministic in `seed` and independent of the training seed, so every
+        condition at a given fraction trains on the SAME reduced set (fair
+        data-efficiency comparison). Used for the data-efficiency curve.
+        """
+        labels = np.asarray(self.label)
+        rng = np.random.RandomState(seed)
+        idx = []
+        for c in np.unique(labels):
+            ci = np.where(labels == c)[0]
+            k = max(1, int(round(len(ci) * frac)))
+            idx.extend(rng.choice(ci, k, replace=False).tolist())
+        idx = sorted(idx)
+        self.data = np.array(self.data[idx])            # materialize the small subset
+        self.label = [self.label[i] for i in idx]
+        self.sample_name = [self.sample_name[i] for i in idx]
+        print('[Feeder] data_fraction={} seed={} -> {} clips, {} classes'.format(
+            frac, seed, len(idx), len(set(self.label))))
 
     def get_mean_map(self):
         data = self.data

@@ -35,19 +35,26 @@ MONO=work_dir/bdsl_shubert_pretrain_bdsl_only/pretrained_epoch30.pt
 POOL=work_dir/bdsl_shubert_pretrain_bdsl_asl/pretrained_epoch30.pt
 bb_for() { case "$1" in mono) echo "$MONO";; xling) echo "$XLING";; pool) echo "$POOL";; *) echo "";; esac; }
 
-echo "TARGET=$TARGET CONDS='$CONDS' SEEDS='$SEEDS' TEST_CONFIG='${TEST_CONFIG:-}'"
+# Data-efficiency: TRAIN_FRACTION (e.g. 0.1) -> --train-fraction + _f<tag> in the name.
+FRAC_ARG=""; FRAC_TAG=""
+if [ -n "${TRAIN_FRACTION:-}" ]; then
+  FRAC_ARG="--train-fraction ${TRAIN_FRACTION}"
+  FRAC_TAG="_f$(awk "BEGIN{printf \"%d\", ${TRAIN_FRACTION}*100}")"
+fi
+
+echo "TARGET=$TARGET CONDS='$CONDS' SEEDS='$SEEDS' TEST_CONFIG='${TEST_CONFIG:-}' FRAC='${TRAIN_FRACTION:-1.0}'"
 for s in $SEEDS; do
   for cond in $CONDS; do
     if [ "$cond" != "scratch" ]; then
       bb=$(bb_for "$cond")
       if [ -z "$bb" ] || [ ! -f "$bb" ]; then echo "FATAL: backbone for '$cond' missing ($bb)"; exit 1; fi
     fi
-    exp="${TARGET}_${cond}_seed${s}"
+    exp="${TARGET}${FRAC_TAG}_${cond}_seed${s}"
     echo "=== $exp (init from $cond) ==="
     if [ "$cond" = "scratch" ]; then
-      python -u main.py --config "config/${TARGET}.yaml" --seed "$s" -Experiment_name "$exp"
+      python -u main.py --config "config/${TARGET}.yaml" --seed "$s" $FRAC_ARG -Experiment_name "$exp"
     else
-      python -u main.py --config "config/${TARGET}.yaml" --seed "$s" \
+      python -u main.py --config "config/${TARGET}.yaml" --seed "$s" $FRAC_ARG \
         --weights "$bb" --ignore-weights fc.weight fc.bias -Experiment_name "$exp"
     fi
     if [ -n "${TEST_CONFIG:-}" ]; then
