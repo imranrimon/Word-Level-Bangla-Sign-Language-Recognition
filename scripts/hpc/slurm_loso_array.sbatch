@@ -17,12 +17,13 @@
 #SBATCH -c 8
 #SBATCH -n 1
 #SBATCH --gpus 1
-#SBATCH -p <PARTITION>              # <-- fill from `sinfo -s`
+#SBATCH -p gpu_2day
 #SBATCH -t 24:00:00
 #SBATCH -o slurm_logs/%x_%A_%a.out
 #SBATCH -e slurm_logs/%x_%A_%a.err
 
-set -euo pipefail
+# NB: no set -u (conda MKL activation not nounset-safe)
+set -eo pipefail
 cd "$SLURM_SUBMIT_DIR"
 mkdir -p slurm_logs
 source ~/miniconda3/etc/profile.d/conda.sh
