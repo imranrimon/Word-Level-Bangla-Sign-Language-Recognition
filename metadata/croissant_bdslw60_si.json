@@ -1,0 +1,45 @@
+{
+  "@context": {
+    "@vocab": "https://schema.org/",
+    "cr": "http://mlcommons.org/croissant/",
+    "sc": "https://schema.org/",
+    "data": {"@id": "cr:data", "@type": "@json"},
+    "dataType": {"@id": "cr:dataType", "@type": "@vocab"},
+    "field": "cr:field",
+    "fileObject": "cr:fileObject",
+    "recordSet": "cr:recordSet",
+    "source": "cr:source",
+    "column": "cr:column",
+    "extract": "cr:extract"
+  },
+  "@type": "sc:Dataset",
+  "conformsTo": "http://mlcommons.org/croissant/1.0",
+  "name": "BdSLW60-SI",
+  "description": "Signer-independent benchmark for word-level Bangla Sign Language recognition (BdSLW60): 60 signs, 18 signers, ~9,307 clips, evaluated under a fixed signer-disjoint split. Data are 27-keypoint MediaPipe pose sequences (NOT raw video). Exposes the ~22.46 pp identity-shortcut gap between random-split and signer-independent evaluation. NOTE: pose arrays derived from BdSLW401 are gated by CC BY-NC-ND (see license); this record ships the pipeline + splits + hashes, with arrays released pending author permission.",
+  "license": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+  "url": "https://github.com/imranrimon/Word-Level-Bangla-Sign-Language-Recognition",
+  "version": "1.0.0",
+  "citation": "BdSLW60 (arXiv:2402.08635, MTAP 2025); BdSLW401 (arXiv:2503.02360).",
+  "keywords": ["sign language recognition", "signer-independent", "Bangla", "low-resource", "pose", "shortcut learning"],
+  "distribution": [
+    {"@type": "cr:FileObject", "@id": "split-json", "name": "signer_independent.json",
+     "description": "Canonical signer-disjoint split: train {1,4,5,6,8,9,11,12} / val {15} / test {2,13}; pretrain pool {3,7,10,14,16,17,18}.",
+     "encodingFormat": "application/json", "contentUrl": "splits/signer_independent.json"},
+    {"@type": "cr:FileObject", "@id": "train-npy", "name": "train_data.npy",
+     "description": "(N,3,300,27,1) float32 pose sequences, train signers.",
+     "encodingFormat": "application/octet-stream", "contentUrl": "data/bdsl_si/train_data.npy"},
+    {"@type": "cr:FileObject", "@id": "val-npy", "name": "val_data.npy", "encodingFormat": "application/octet-stream", "contentUrl": "data/bdsl_si/val_data.npy"},
+    {"@type": "cr:FileObject", "@id": "test-npy", "name": "test_data.npy", "encodingFormat": "application/octet-stream", "contentUrl": "data/bdsl_si/test_data.npy"}
+  ],
+  "recordSet": [
+    {"@type": "cr:RecordSet", "@id": "clips", "name": "clips",
+     "description": "One record per clip: pose sequence, class label, signer id, split.",
+     "field": [
+       {"@type": "cr:Field", "@id": "clips/pose", "name": "pose", "description": "27-keypoint MediaPipe pose sequence, shape (3,T,27,1).", "dataType": "sc:Float"},
+       {"@type": "cr:Field", "@id": "clips/label", "name": "label", "description": "Sign class id in [0,59].", "dataType": "sc:Integer"},
+       {"@type": "cr:Field", "@id": "clips/signer", "name": "signer", "description": "Signer id in [1,18] (splits are signer-disjoint).", "dataType": "sc:Integer"},
+       {"@type": "cr:Field", "@id": "clips/split", "name": "split", "description": "train | val | test | pretrain.", "dataType": "sc:Text"}
+     ]}
+  ],
+  "_todo": "Fill contentSize/sha256 per FileObject before submission; confirm array release with BdSLW401 authors (see docs/BDSLW401_LICENSE_REQUEST.md); validate with `mlcroissant`."
+}
