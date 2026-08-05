@@ -33,7 +33,10 @@ SEEDS="${SEEDS:-0 1 2}"
 XLING=work_dir/bdsl_shubert_pretrain_xlingual/pretrained_epoch30.pt
 MONO=work_dir/bdsl_shubert_pretrain_bdsl_only/pretrained_epoch30.pt
 POOL=work_dir/bdsl_shubert_pretrain_bdsl_asl/pretrained_epoch30.pt
-bb_for() { case "$1" in mono) echo "$MONO";; xling) echo "$XLING";; pool) echo "$POOL";; *) echo "";; esac; }
+bb_for() {
+  if [ -n "${BACKBONE:-}" ]; then echo "$BACKBONE"; return; fi   # explicit override (e.g. lambda-ablation)
+  case "$1" in mono) echo "$MONO";; xling) echo "$XLING";; pool) echo "$POOL";; *) echo "";; esac
+}
 
 # Data-efficiency: TRAIN_FRACTION (e.g. 0.1) -> --train-fraction + _f<tag> in the name.
 FRAC_ARG=""; FRAC_TAG=""

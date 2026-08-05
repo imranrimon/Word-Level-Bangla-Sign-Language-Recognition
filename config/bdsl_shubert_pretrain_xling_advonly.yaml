@@ -1,0 +1,50 @@
+Experiment_name: bdsl_shubert_pretrain_xling_advonly
+
+# Cross-lingual masked pose SSL — the PROPOSED MECHANISM (not just pool mixing).
+# Same BdSL+ASL pool (75,589 clips) and masked-code objective as
+# bdsl_shubert_pretrain_bdsl_asl.yaml, PLUS:
+#   * language-adversarial invariance (GRL): backbone learns language-invariant
+#     pose features (lambda_adv);
+#   * cross-lingual contrastive alignment (SupCon over shared k-means codebook):
+#     aligns ASL & BdSL clips of similar sign structure (lambda_contrast).
+# The pool-only bdsl_asl.yaml is the ABLATION (lambda_adv=lambda_contrast=0).
+
+backbone: model.block_gcn.Model
+backbone_args:
+  num_class: 60
+  num_point: 27
+  num_person: 1
+  graph: graph.sign_27.Graph
+  graph_args:
+    labeling_mode: 'spatial'
+  in_channels: 3
+  num_blocks: [2, 2, 2, 2]
+  stage_channels: [64, 128, 256, 256]
+  max_distance: 8
+  return_features: True
+  stride_between_stages: False
+
+pretrain:
+  manifest: data/ssl_pool_manifest_bdsl_asl.json
+  targets:  data/pretrain_kmeans_targets_bdsl_asl.npz
+  num_codes: 64
+  mask_ratio: 0.3
+  window_size: 120
+  feat_dim: 256
+  # --- cross-lingual mechanism ---
+  num_languages: 2          # 0=BdSL, 1=ASL (feeders/pretrain_feeder.language_of)
+  lambda_adv: 0.1           # weight on the gradient-reversal language-invariance term
+  grl_alpha: 1.0            # gradient-reversal strength
+  lambda_contrast: 0.0      # weight on the shared-codebook contrastive term
+  proj_dim: 128             # contrastive projection dim
+  contrast_temp: 0.1        # InfoNCE temperature
+  code_sim_threshold: 0.5   # code-histogram cosine above which a pair is positive
+
+base_lr: 0.0001
+weight_decay: 0.0001
+
+batch_size: 32
+num_epoch: 30
+save_interval: 5
+num_worker: 0
+log_every: 50
