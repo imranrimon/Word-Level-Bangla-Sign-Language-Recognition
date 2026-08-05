@@ -17,6 +17,33 @@ signer-independent** protocol, transfers to **low-resource** target sign
 languages — beating monolingual SSL and from-scratch, and generalizing across
 ≥2 target languages and signer-disjoint LOSO.
 
+## Empirical status — the low-resource reframe (2026-08-04)
+
+Running the gate + a data-efficiency curve **reframed the claim, honestly**:
+
+- **At FULL data on BdSLW60, cross-lingual does NOT beat monolingual** (mono 0.802 >
+  xling 0.774 val, 3-seed). The naive "xling > mono" gate *fails*.
+- **The data-efficiency curve shows the cross-lingual advantage is a LOW-RESOURCE
+  phenomenon.** `xling − mono` = **+4.2 pp @10%** → +0.3 @25% → +1.3 @50% → −2.8 @100%.
+  The benefit exists *exactly when labels are scarcest* and vanishes as data grows.
+- **The mechanism (xling: GRL + contrastive) beats plain pooling at EVERY fraction**
+  (+1.7 to +5.7 pp) — the novel component adds value (earlier "mechanism hurts" reads
+  were seed-0 noise).
+- **All SSL beats scratch at 10–25%** (+5 to +9 pp) — masked pose SSL helps low-resource.
+
+| cond | 10% | 25% | 50% | 100% | (BdSLW60-SI val Top-1, 3-seed) |
+|---|---|---|---|---|---|
+| scratch | 0.460 | 0.607 | 0.749 | 0.780 | |
+| mono | 0.508 | 0.690 | 0.749 | 0.802 | |
+| pool | 0.533 | 0.654 | 0.705 | 0.747 | |
+| **xling** | **0.550** | 0.693 | 0.762 | 0.774 | |
+
+→ **Reframed thesis:** *cross-lingual masked pose SSL beats monolingual **when labels
+are scarce*** — the low-resource regime the paper always claimed. **The data-efficiency
+curve is now the headline figure (Fig 1).** Caveats: val (not test); significance needs
+LOSO (running) + paired bootstrap; the crossover is at the very-low end (≤10–15%).
+Extending now: BdSL 5/15%, LSA64/AUTSL curves (smaller targets = naturally low-resource).
+
 ## Conceptual core (the fundamental contribution)
 
 Everything empirical below is evidence for **one idea**:
