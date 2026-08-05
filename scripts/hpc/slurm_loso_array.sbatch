@@ -33,5 +33,6 @@ export PYTHONIOENCODING=utf-8
 SIGNERS=(1 4 5 6 8 9 11 12 2 13 15)
 TS=${SIGNERS[$SLURM_ARRAY_TASK_ID]}
 echo "LOSO fold: test signer U$TS"
+export PYTHONPATH="$SLURM_SUBMIT_DIR:${PYTHONPATH:-}"
 python -u tools/run_loso.py --single config/bdsl_block_gcn_si.yaml \
     --test-signers "$TS" --seeds 0 1 2 --skip-existing
