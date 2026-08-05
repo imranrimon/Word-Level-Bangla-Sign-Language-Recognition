@@ -54,15 +54,30 @@ ASL Citizen @ NeurIPS D&B).
   Our novelty: **first for Bangla** (absent from top venues), **11-architecture**
   breadth, **localization** (feature isolation), and **label-free interventions**.
 
-## Current results status (what we already have)
-- ✅ BlockGCN SI ~77% Top-1 / 22.46 pp gap (the central measurement).
-- ✅ Monolingual masked pose SSL **helps** under SI (+2.2 pp val, BdSLW60 @ lr0.01,
-  3-seed) — a clean intervention result.
-- ✅ LSA64 SI from-scratch baseline (86.7% test, 3-seed) — cross-dataset SI evidence.
-- ✅ Recipe-sensitivity finding (fine-tune LR ±13 pp on pretrained inits).
-- 🔄 11-arch SI table (some archs done; complete the sweep).
-- ⬜ LOSO (headline variance) — **running now**.
-- ⬜ Feature isolation (Option B) — Stage B assets exist.
+## Results status (2026-08-05) — data mostly complete
+
+**Table 1 draft — SI benchmark, Top-1 mean ± std (val, policy-aware `summarize_seeds`):**
+| Architecture | N | Top-1 SI |
+|---|---|---|
+| Adaptive GNN | 3 | **88.80 ± 1.16** |
+| SLGTFormer | 2 | 86.64 ± 0.33 |
+| Attention GNN | 3 | 85.19 ± 1.47 |
+| ST-GCN vanilla | 3 | 84.73 ± 2.17 |
+| GNN + Bi-LSTM | 3 | 83.05 ± 2.46 |
+| Pose-LSTM | 3 | 74.20 ± 0.95 |
+| BlockGCN | pilot | ~76.95 (clean; aggregate row polluted — re-run) |
+| GNN + Transformer | 3 | 30.89 ± 18.97 (did not converge — re-run) |
+
+- ✅ **Shortcut**: random ~99% → **~77% SI** (BlockGCN) = **22.46 pp gap**; SD
+  counterparts on disk for the per-arch gap column.
+- ✅ **Intervention — monolingual masked pose SSL helps under SI**: `mono > scratch`
+  significant where labels are scarce (BdSL@10% +4.8 pp p<0.001; @5% +6.0 pp) — a
+  label-free intervention that shrinks the gap most in the low-data regime.
+- ✅ **Recipe control**: fine-tune LR worth ±13 pp on pretrained inits.
+- ✅ **Cross-dataset SI**: LSA64 from-scratch 86.7% test (3-seed) + AUTSL official split.
+- 🔄 **LOSO** (headline signer-fold variance) — array `124307`, 11 folds running.
+- ⬜ **Feature isolation** (Option B, pose vs DINOv2) — Stage B assets exist.
+- ⬜ **Clean re-runs**: BlockGCN + GNN-Transformer SI (polluted / non-converged).
 
 ## What's needed to submit
 1. **Complete the 11-arch SI table** (multi-seed sweep) + random-split counterparts.
