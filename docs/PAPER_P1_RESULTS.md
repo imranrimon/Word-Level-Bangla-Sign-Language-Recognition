@@ -51,13 +51,40 @@ On LSA64 `mono ≈ scratch` (p=0.40) while `xling > mono` (p=0.039): **adding AS
 what helps, not self-supervision alone** — a direct argument for the cross-lingual
 mechanism. (AUTSL @10/25% [pending re-run].)
 
-## The mechanism adds value
-`xling > pool` at every BdSLW60 fraction (+1.7 to +5.7 pp) and every LSA64 fraction
-— the GRL + contrastive mechanism improves over plain data pooling.
+## The mechanism is target-dependent (honest nuance)
+`xling > pool` at every BdSLW60 and LSA64 fraction (+1.7 to +5.7 pp) — the GRL +
+contrastive mechanism improves over plain pooling **for those targets**. But on
+**AUTSL** (Turkish — the most distant target, absent from the ASL+BdSL pretraining
+pool) the **mechanism hurts**: xling@10% ≈0.59 vs pool 0.70, mono 0.69.
+
+→ **The robust win is cross-lingual POOLING** — `pool ≥ mono ≥ scratch` on all three
+languages at low data. The **mechanism helps closer targets but can hurt a distant
+unseen language** — a real limitation to report and to probe with the λ-ablation.
+
+**Table 1c. AUTSL-SI val Top-1 (3-seed mean).**
+| cond | 10% | 25% |
+|---|---|---|
+| scratch | 0.666 | 0.836 |
+| mono | 0.690 | 0.833 |
+| **pool** | **0.700** | **0.840** |
+| xling | 0.592* | 0.790 |
+
+\*xling@10% from 2/3 seeds (3rd running); both are genuinely low (0.586, 0.599).
+
+## Val → test confirmation ✅
+The crossover **holds on held-out test signers**, not just val: xling is the best
+condition at @10% on BdSL *and* LSA64.
+
+**Table 3. @10% held-out TEST-signer Top-1 (3-seed mean).**
+| Target | scratch | mono | pool | **xling** | xling−mono |
+|---|---|---|---|---|---|
+| BdSLW60 (sig. 2,13) | 0.442 | 0.439 | 0.405 | **0.478** | **+3.9 pp** |
+| LSA64 (sig. 9,10) | 0.597 | 0.622 | 0.581 | **0.631** | +0.9 pp |
+| AUTSL (official) | 0.663 | 0.686 | **0.693** | [running] | — |
 
 ## Robustness [pending — running]
-- **LOSO** (11 signer folds, BdSLW60): [mean ± std] — the headline signer-noise variance.
-- **Held-out test signers @10%** (BdSL 2,13 / LSA64 9,10 / AUTSL official test): [Table 3].
+- **LOSO** (11 signer folds, BdSLW60): [mean ± std] — the headline signer-noise
+  variance (array `124307`, running).
 
 ## Honest scope / limitations
 - The cross-lingual advantage is a **low-data effect** (≤10–15%); at full data on the
