@@ -1,0 +1,6 @@
+data/karsl_si_v2a/train: 7058 clips, signers ['01', '02'], classes 70
+data/karsl_si_v2a/val: 3526 clips, signers ['03'], classes 70
+data/karsl_si_v2a/test: 3526 clips, signers ['03'], classes 70
+data/karsl_si_v2b/train: 3554 clips, signers ['01'], classes 70
+data/karsl_si_v2b/val: 3504 clips, signers ['02'], classes 70
+data/karsl_si_v2b/test: 3526 clips, signers ['03'], classes 70

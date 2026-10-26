@@ -1,0 +1,69 @@
+[project]
+name = "xling-pose-ssl-replication"
+version = "0.1.0"
+description = "Pre-registered replication audit of cross-lingual masked-pose pretraining for sign language recognition: pretraining, fine-tuning, pose-motion distances, pre-registered analyses and figure generators."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.8"
+keywords = ["sign language recognition", "self-supervised learning", "transfer learning", "pre-registration", "replication", "skeleton", "pose"]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+# Mirrors environment.yml (conda env `bdsl_graph`). Install PyTorch for your CUDA/CPU
+# from https://pytorch.org first; the repository is run from source (not pip-installed).
+dependencies = [
+    "torch>=2.0,<2.5",
+    "torchvision",
+    "torch_geometric>=2.3",
+    "numpy>=1.23,<2",
+    "scipy",
+    "pandas",
+    "matplotlib",
+    "scikit-learn",
+    "statsmodels",
+    "pyyaml",
+    "tqdm",
+    "einops",
+    "opencv-python-headless",
+]
+
+[project.optional-dependencies]
+# Pose extraction only. 0.10.9 is the newest Python 3.8 wheel with the legacy
+# mp.solutions.holistic API; install with `pip install --only-binary=:all: mediapipe==0.10.9`.
+pose = ["mediapipe==0.10.9"]
+download = ["requests", "py7zr"]
+tracking = ["wandb"]
+dev = ["pytest>=7", "ruff==0.6.9", "pre-commit"]
+
+[tool.ruff]
+target-version = "py38"
+line-length = 120
+extend-exclude = ["results", "splits"]
+
+[tool.ruff.lint]
+# Correctness rules (pyflakes F, syntax/IO E9, import/statement E4/E7). Legacy
+# style choices of the research code are not enforced (compact one-liners,
+# path-setup imports, short loop variables).
+select = ["E4", "E7", "E9", "F"]
+ignore = [
+    "E401",  # multiple imports on one line
+    "E402",  # module import not at top (sys.path setup precedes imports)
+    "E701",  # multiple statements on one line (colon)
+    "E702",  # multiple statements on one line (semicolon)
+    "E703",  # trailing semicolon
+    "E722",  # bare except
+    "E731",  # lambda assignment
+    "E741",  # ambiguous variable name
+    "F841",  # unused local variable (kept where it documents an unpacked value)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]   # package re-exports / model registration imports
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+filterwarnings = ["ignore::DeprecationWarning", "ignore::FutureWarning", "ignore::UserWarning"]

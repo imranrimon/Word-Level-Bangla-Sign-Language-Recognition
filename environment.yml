@@ -1,0 +1,26 @@
+name: bdsl_graph
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - pyg
+dependencies:
+  - python=3.8
+  - pytorch
+  - pytorch-cuda=11.8
+  - torchvision
+  - pyg
+  - pytorch-scatter
+  - scipy
+  - pandas
+  - matplotlib
+  - scikit-learn
+  - statsmodels
+  - pyyaml
+  - tqdm
+  - pytest
+  - pip
+  - pip:
+    - einops
+    - opencv-python
+    - mediapipe==0.10.9  # newest cp38 wheel with legacy mp.solutions.holistic; install with --only-binary=:all:

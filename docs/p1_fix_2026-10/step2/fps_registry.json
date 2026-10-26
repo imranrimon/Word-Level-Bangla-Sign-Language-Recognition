@@ -1,0 +1,32 @@
+{
+ "_doc": "Native frame rates used by tools/compute_lang_distance_v2.py. 'map' keys are matched as substrings of a target NAME or a source path (first match wins). Evidence per entry in 'evidence'. All extractors process every frame (no temporal subsampling): verified for WLASL (V3 T == video frame count, 25/25 clips) and consistent for the others (pose valid-T median ~= video frame median).",
+ "map": {
+  "BdSL": 30.0,
+  "bdsl_si": 30.0,
+  "bdslw401": 30.0,
+  "bdslw102_a": 30.0,
+  "wlasl_pose_cache": 30.0,
+  "LSA64": 59.94,
+  "AUTSL": 30.0,
+  "KArSL": 30.0,
+  "GSL": 30.0,
+  "BISINDO": 30.0,
+  "LSFB": 50.0,
+  "LIBRAS": 30.2,
+  "ASL-Citizen": 30.0
+ },
+ "evidence": {
+  "BdSL / bdsl_si (BdSLW60 segmented clips)": "VERIFIED: 40/40 sampled data/bdslw60_clips mp4 = 30.0 fps (9,307 clips); median 41 frames vs pose valid-T median 39. NOTE the unsegmented source videos (bdslw60_raw) are 15-30 fps (median 24.1): segmentation re-encoded every trial at 30 fps, so some BdSLW60 clips contain duplicated frames.",
+  "bdslw401 (BdSLW401 front, pool)": "VERIFIED: 91/91 front clips range-fetched from Kaggle hasanssl/bdslw401 = 30.0 fps (median ~80 frames vs pose valid-T median 78); 60/60 lateral clips also 30.0.",
+  "bdslw102_a (BdSLW102a sentences, pool)": "ASSUMED 30 (same lab/rig as BdSLW60/401); no videos on the cluster. 4.5% of the pool.",
+  "wlasl_pose_cache (WLASL, pool)": "VERIFIED (sample): 40 videos range-fetched from Kaggle risangbaskoro/wlasl-processed: 29.97 x17, 30.0 x11, ~30.3 x5, 23.98 x5, 25.0 x2 -> median 29.97; WLASL_v0.3.json's 'fps: 25' (all 21,083) is NOT the container rate. Heterogeneous (~17% at 24-25 fps); corpus value 30 used.",
+  "LSA64": "VERIFIED: 40/40 = 59.94 fps (median 122 frames = pose valid-T median 122).",
+  "AUTSL": "VERIFIED: 40/40 color mp4 = 30.0 fps (median 62.5 frames vs pose 61).",
+  "KArSL": "VERIFIED: 40/40 = 30.0 fps (median 23 frames vs pose 19).",
+  "GSL": "DOCUMENTED, NOT VERIFIABLE on cluster: GSL isolated ships JPEG frame folders (median 16 frames = pose valid-T 15); 30 fps per the GSL dataset description (RealSense D435 capture).",
+  "BISINDO": "VERIFIED (heterogeneous): 40 sampled mp4 25.7-30.0 fps, median 30.0 (median 60 frames vs pose 70).",
+  "LSFB": "DOCUMENTED 50 fps (LSFB-ISOL); authors' pose arrays, no videos. Check: T vs (end-start) ms regression slope printed by the distance job (median T/dur = 65 is biased up by inclusive frame counting on ~0.3 s clips).",
+  "LIBRAS": "VERIFIED: 40/40 = 30.04-30.34 fps, median 30.2 (median 139.5 frames = pose 137.5).",
+  "ASL-Citizen": "VERIFIED (heterogeneous): median 29.996, range 25-31.2."
+ }
+}

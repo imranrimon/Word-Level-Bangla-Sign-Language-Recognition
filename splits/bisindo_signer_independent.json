@@ -1,0 +1,20 @@
+{
+  "schema": "bisindo-signer-independent-v1",
+  "description": "Fixed signer-disjoint split of WL-BISINDO (Indonesian Sign Language, Banten variant) for cross-lingual transfer evaluation (P1, 6th target language). 32 signs x 5 signers x ~10 samples = 1600 clips. Signers 1-4 cover all 32 classes; partial signer 0 (12 classes) is EXCLUDED. train=signers 1-2, val=3, test=4 (signer-disjoint).",
+  "filename_pattern": "^signer(\\d+)_label(\\d+)_sample(\\d+)\\.mp4$",
+  "excluded_signers": [
+    0
+  ],
+  "splits": {
+    "train": [
+      1,
+      2
+    ],
+    "val": [
+      3
+    ],
+    "test": [
+      4
+    ]
+  }
+}

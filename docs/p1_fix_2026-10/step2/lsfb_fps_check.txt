@@ -1,0 +1,1 @@
+LSFB n=2000: T = 3.82 + 49.82 * duration_s  (slope = frame rate); median T 16.0, median dur 0.239s

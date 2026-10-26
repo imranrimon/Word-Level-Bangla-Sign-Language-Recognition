@@ -1,0 +1,17 @@
+{
+ "recomputed": {
+  "0": 0.14526210874543155,
+  "1": 0.851087566945786,
+  "2": 0.4341460403523649,
+  "4": 0.6385085239386499
+ },
+ "original_autsl_anchored": [
+  0.1207,
+  0.8357,
+  0.4458,
+  0.0,
+  0.7242
+ ],
+ "lang_ids": "0=BdSL 1=ASL 2=LSA64 3=AUTSL 4=KArSL",
+ "estimator": "RBF-MMD^2 biased diag-removed, median heuristic, n=400, seed 0, per-joint speed mean+std; target = data/autsl_si/train_data.npy"
+}

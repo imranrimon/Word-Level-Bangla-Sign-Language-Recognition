@@ -1,0 +1,73 @@
+# P1 fix 2026-10 (v2 law rerun): IDENTICAL recipe to config/lsfb_si_lr01_f10.yaml
+# TEST-phase config (held-out test signers). Only addition: results go to results_p1fix_v2.csv (not results_final.csv).
+# P1 item6 (2026-10-10): law fine-tune recipe materialised for pretraining-seed replication.
+# Identical to config/lsfb_si_lr01.yaml + --train-fraction 0.1 (subset_seed 42, the default) + explicit
+# grad_clip_norm 0.0 (no clipping, as the original *_lr01_f10_{pool,xling} runs) + num_worker 8
+# (the originals were launched with --num-worker 8).
+# Backbone weights are passed per run via tools/run_resumable_seed.py --init-weights (fc dropped).
+Experiment_name: lsfb_si
+# LSFB-ISOL (Belgian-French SL), signer-independent split (P1 7th target language).
+# 60 most-frequent signs, 99 signers (train 74 / val 9 / test 16), cleaned MediaPipe
+# poses -> 27-kp skeleton. Fine-tune recipe mirrors lsa64_si_lr01 / bisindo_si_lr01.
+# Bundles: preprocessing/download_lsfb_isol_subset.py + build_lsfb_si_bundle.py
+
+feeder: feeders.feeder.Feeder
+train_feeder_args:
+  data_path: data/lsfb_si/train_data.npy
+  label_path: data/lsfb_si/train_label.pkl
+  debug: False
+  random_choose: True
+  window_size: 120
+  random_shift: True
+  normalization: True
+  random_mirror: False
+  random_mirror_p: 0.0
+  is_vector: False
+  lap_pe: False
+
+test_feeder_args:
+  data_path: data/lsfb_si/test_data.npy
+  label_path: data/lsfb_si/test_label.pkl
+  random_mirror: False
+  normalization: True
+  is_vector: False
+  window_size: 120
+  random_choose: False
+
+model: model.block_gcn.Model
+model_args:
+  num_class: 60
+  num_point: 27
+  num_person: 1
+  graph: graph.sign_27.Graph
+  graph_args:
+    labeling_mode: 'spatial'
+  in_channels: 3
+  num_blocks: [2, 2, 2, 2]
+  stage_channels: [64, 128, 256, 256]
+  max_distance: 8
+
+weight_decay: 0.0001
+base_lr: 0.01
+step: [60, 80]
+
+device: [0]
+keep_rate: 0.9
+only_train_epoch: 1
+batch_size: 32
+test_batch_size: 32
+num_epoch: 100
+nesterov: True
+warm_up_epoch: 5
+optimizer: SGD
+
+wandb: False
+num_worker: 8
+save_interval: 10
+
+# P1 law @10% recipe
+train_fraction: 0.1
+subset_seed: 42
+grad_clip_norm: 0.0
+
+results_csv: results_p1fix_v2.csv

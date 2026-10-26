@@ -1,0 +1,4 @@
+exact REML VCs (pp^2): lang 0.874  pseed 1.906  resid 10.868
+MoM (with d)    (pp^2): lang 0.874  pseed 1.906  resid 10.868
+b = -3.032, Wald 95% CI [-11.94, 5.88], p = 0.505; OLS slope on pooled G -3.032
+no distance term: exact REML lang 0.649 pseed 1.906 resid 10.868; MoM lang 0.649 pseed 1.906 resid 10.868

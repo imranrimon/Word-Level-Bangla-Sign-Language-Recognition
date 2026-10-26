@@ -1,0 +1,53 @@
+# 2026-10 P1 audit rerun: leak-free copy of config/bdsl_shubert_pretrain_dgxl.yaml
+# (only manifest/targets/Experiment_name/num_worker changed)
+Experiment_name: bdsl_shubert_pretrain_dgxl_noautsl
+backbone: model.block_gcn.Model
+backbone_args:
+  num_class: 60
+  num_point: 27
+  num_person: 1
+  graph: graph.sign_27.Graph
+  graph_args:
+    labeling_mode: spatial
+  in_channels: 3
+  num_blocks:
+  - 2
+  - 2
+  - 2
+  - 2
+  stage_channels:
+  - 64
+  - 128
+  - 256
+  - 256
+  max_distance: 8
+  return_features: true
+  stride_between_stages: false
+pretrain:
+  manifest: data/ssl_pool_manifest_multisrc_noautsl.json
+  targets: data/pretrain_kmeans_targets_multisrc_noautsl.npz
+  num_codes: 64
+  mask_ratio: 0.3
+  window_size: 120
+  feat_dim: 256
+  num_languages: 5
+  lambda_adv: 0.1
+  grl_alpha: 1.0
+  lambda_contrast: 0.1
+  proj_dim: 128
+  contrast_temp: 0.1
+  code_sim_threshold: 0.5
+  source_distances:
+  - 0.145
+  - 0.22
+  - 0.178
+  - 0.416
+  - 0.314
+  align_tau: 0.1
+base_lr: 0.0001
+weight_decay: 0.0001
+batch_size: 32
+num_epoch: 30
+save_interval: 5
+num_worker: 4
+log_every: 50

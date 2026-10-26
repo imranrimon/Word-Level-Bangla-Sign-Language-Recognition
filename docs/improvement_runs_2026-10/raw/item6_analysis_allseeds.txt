@@ -1,0 +1,88 @@
+# P1 law x pretraining seed  (fine-tune seeds: all)
+
+| target | MMD | pool ps0 | xling ps0 | **G ps0** | pool ps1 | xling ps1 | **G ps1** | pool ps2 | xling ps2 | **G ps2** | **G pooled** | 95% hier CI | P(G>0) | paired CI | n ft (pool/xling per ps) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| BdSL | 0.143 | 53.28 | 54.96 | **+1.68** | 55.17 | 52.06 | **-3.10** | 53.74 | 57.91 | **+4.18** | **+0.92** | [-2.51, +4.36] | 0.69 | [-3.10, +4.75] | 3/3 3/3 3/3 |
+| LSA64 | 0.176 | 60.84 | 61.77 | **+0.94** | 55.52 | 60.83 | **+5.31** | 57.81 | 53.86 | **-3.95** | **+0.77** | [-4.58, +5.39] | 0.62 | [-3.95, +5.35] | 3/3 3/3 3/3 |
+| KArSL | 0.344 | 69.86 | 65.52 | **-4.33** | 63.28 | 70.25 | **+6.98** | 66.11 | 67.41 | **+1.30** | **+1.31** | [-3.62, +6.74] | 0.68 | [-4.60, +7.92] | 3/3 3/3 3/3 |
+| AUTSL | 0.411 | 69.95 | 63.52 | **-6.43** | 66.88 | 69.63 | **+2.75** | 69.29 | 64.88 | **-4.41** | **-2.70** | [-6.62, +1.30] | 0.10 | [-7.31, +2.41] | 3/3 3/3 3/3 |
+| GSL | 0.121 | 72.00 | 74.06 | **+2.06** | 75.39 | 74.41 | **-0.98** | 71.09 | 66.06 | **-5.02** | **-1.32** | [-6.83, +3.39] | 0.33 | [-5.07, +2.60] | 5/5 5/5 5/5 |
+| LSFB | 0.480 | 40.84 | 35.78 | **-5.06** | 34.80 | 40.95 | **+6.16** | 33.90 | 34.96 | **+1.05** | **+0.72** | [-4.34, +5.66] | 0.61 | [-4.87, +6.34] | 5/5 5/5 5/5 |
+| LIBRAS | 0.315 | 46.17 | 41.49 | **-4.69** | 41.03 | 42.06 | **+1.03** | 41.94 | 38.86 | **-3.08** | **-2.25** | [-5.90, +1.26] | 0.11 | [-5.07, +1.49] | 5/5 5/5 5/5 |
+
+## Sign of G per pretraining seed (+ helps / - backfires); paper side of d*=0.193
+  BdSL    d=0.143 paper-side +  per-pseed +-+  <-- disagrees with paper side at some pseed
+  LSA64   d=0.176 paper-side +  per-pseed ++-  <-- disagrees with paper side at some pseed
+  KArSL   d=0.344 paper-side -  per-pseed -++  <-- disagrees with paper side at some pseed
+  AUTSL   d=0.411 paper-side -  per-pseed -+-  <-- disagrees with paper side at some pseed
+  GSL     d=0.121 paper-side +  per-pseed +--  <-- disagrees with paper side at some pseed
+  LSFB    d=0.480 paper-side -  per-pseed -++  <-- disagrees with paper side at some pseed
+  LIBRAS  d=0.315 paper-side -  per-pseed -+-  <-- disagrees with paper side at some pseed
+
+## Law refits
+
+| G source | 7-lang OLS | R²(7) | d*(7) | calib-5 OLS | R²(5) | d*(5) | ρ(5) | LOO MAE(5) | sign (paper protocol) | LOO MAE(7) | LOO sign(7) |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| paper (P1) | +4.78 -24.78·d | 0.887 | 0.193 | +5.99 -30.18·d | 0.997 | 0.198 | -1.00 | 0.23 | 5/5 + 2/2 = **7/7** | 1.42 | 7/7 |
+| pseed 0 | +4.73 -24.59·d | 0.889 | 0.192 | +5.91 -29.81·d | 0.997 | 0.198 | -1.00 | 0.22 | 5/5 + 2/2 = **7/7** | 1.39 | 7/7 |
+| pseed 1 | -2.32 +17.28·d | 0.403 | 0.134 | -2.34 +18.95·d | 0.344 | 0.124 | +0.60 | 4.89 | 2/5 + 2/2 = **4/7** | 3.10 | 4/7 |
+| pseed 2 | -2.12 +2.45·d | 0.009 | 0.864 | -0.94 -2.67·d | 0.007 | -0.354 | +0.10 | 5.91 | 1/5 + 1/2 = **2/7** | 4.32 | 2/7 |
+| **pooled (3 pseeds)** | +0.10 -1.62·d | 0.018 | 0.059 | +0.88 -4.51·d | 0.116 | 0.194 | -0.10 | 2.52 | 0/5 + 1/2 = **1/7** | 2.09 | 1/7 |
+  [0] prospective calib-5 predictions: LSFB pred -8.39 vs actual -5.06, LIBRAS pred -3.48 vs actual -4.69
+  [1] prospective calib-5 predictions: LSFB pred +6.75 vs actual +6.16, LIBRAS pred +3.63 vs actual +1.03
+  [2] prospective calib-5 predictions: LSFB pred -2.22 vs actual +1.05, LIBRAS pred -1.79 vs actual -3.08
+  [pooled] prospective calib-5 predictions: LSFB pred -1.29 vs actual +0.72, LIBRAS pred -0.55 vs actual -2.25
+
+## Pooled-law bootstrap (5000 hierarchical draws, languages resampled independently)
+  R²(7)       median +0.066  95% [+0.000, +0.594]
+  slope(7)    median -1.418  95% [-15.133, +12.447]
+  d*(7)       median +0.270  95% [-1.474, +2.015]
+  R²(5)       median +0.128  95% [+0.000, +0.824]
+  slope(5)    median -4.448  95% [-21.088, +13.047]
+  d*(5)       median +0.237  95% [-1.144, +1.602]
+  LOO MAE(5)  median +3.226  95% [+0.922, +6.552]
+  LOO MAE(7)  median +2.791  95% [+1.243, +4.744]
+  paper-protocol sign count: 7/7: 0.019, 6/7: 0.059, 5/7: 0.120, 4/7: 0.209, 3/7: 0.247
+  all-7 LOO sign count:      7/7: 0.018, 6/7: 0.061, 5/7: 0.148, 4/7: 0.212, 3/7: 0.227
+  P(slope(7) < 0) = 0.5800
+  per-language P(G>0): BdSL 0.69, LSA64 0.62, KArSL 0.68, AUTSL 0.10, GSL 0.33, LSFB 0.61, LIBRAS 0.11
+
+## Pooled-law bootstrap, JOINT pretraining-seed draws (5000 draws; shared backbones)
+  R²(7)       median +0.094  95% [+0.000, +0.643]
+  slope(7)    median -1.744  95% [-16.974, +13.062]
+  d*(7)       median +0.194  95% [-1.481, +1.915]
+  R²(5)       median +0.149  95% [+0.000, +0.883]
+  slope(5)    median -4.503  95% [-24.330, +14.001]
+  d*(5)       median +0.204  95% [-1.165, +1.500]
+  LOO MAE(5)  median +3.128  95% [+0.915, +6.417]
+  LOO MAE(7)  median +2.590  95% [+1.337, +4.260]
+  paper-protocol sign count: 7/7: 0.036, 6/7: 0.077, 5/7: 0.167, 4/7: 0.187, 3/7: 0.237, 2/7: 0.180
+  P(slope(7) < 0) = 0.5908
+
+## Variance decomposition of G per language (pp)
+| target | SD of G over 3 pretraining seeds | mean fine-tune SE of G within a pretraining seed | ratio |
+|---|---|---|---|
+| BdSL | 3.70 | 2.11 | 1.8x |
+| LSA64 | 4.64 | 2.15 | 2.2x |
+| KArSL | 5.66 | 3.83 | 1.5x |
+| AUTSL | 4.82 | 2.34 | 2.1x |
+| GSL | 3.55 | 2.00 | 1.8x |
+| LSFB | 5.62 | 2.12 | 2.6x |
+| LIBRAS | 2.95 | 1.84 | 1.6x |
+| mean | 4.42 | 2.34 | 1.9x |
+  spread of pooled G across languages (SD) = 1.67pp; paper seed-0 spread = 3.65pp
+  pool: best pretraining seed per target {'BdSL': 1, 'LSA64': 0, 'KArSL': 0, 'AUTSL': 0, 'GSL': 1, 'LSFB': 0, 'LIBRAS': 0}
+  xling: best pretraining seed per target {'BdSL': 2, 'LSA64': 0, 'KArSL': 1, 'AUTSL': 1, 'GSL': 1, 'LSFB': 1, 'LIBRAS': 1}
+
+## Held-out TEST xling-pool (P1 tab:test languages)
+
+| target | G_test ps0 | G_test ps1 | G_test ps2 | pooled | 95% hier CI |
+|---|---|---|---|---|---|
+| BdSL | +7.33 (40.5/47.8) | -1.79 (48.0/46.2) | +0.12 (45.2/45.3) | **+1.89** | [-1.86, +6.14] |
+| LSA64 | +5.00 (58.1/63.1) | -1.40 (58.1/56.7) | -7.50 (57.1/49.6) | **-1.30** | [-8.24, +5.32] |
+| AUTSL | -7.01 (69.3/62.3) | +2.11 (66.5/68.6) | -4.10 (68.5/64.4) | **-3.00** | [-6.87, +0.85] |
+
+## Control: original pool backbone re-fine-tuned with the materialised configs (seed 0)
+  GSL    original 77.37  rerun 77.37
+  KArSL  original 70.21  rerun 70.21
+  LSFB   original 41.66  rerun 41.66

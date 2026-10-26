@@ -1,0 +1,67 @@
+Experiment_name: lsa64_si_test
+
+# Held-out TEST-signer evaluation for LSA64 (signers 9-10). Use with a trained
+# best checkpoint to get the canonical signer-independent number:
+#   python main.py --config config/lsa64_si_test.yaml --phase test \
+#       --weights work_dir/lsa64_si/lsa64_si_model-best.pt
+# Differs from config/lsa64_si.yaml ONLY in test_feeder (val -> test split) and
+# Experiment_name (distinct results_final.csv row).
+
+# feeder
+feeder: feeders.feeder.Feeder
+train_feeder_args:
+  data_path: data/lsa64_si/train_data.npy
+  label_path: data/lsa64_si/train_label.pkl
+  debug: False
+  random_choose: True
+  window_size: 120
+  random_shift: True
+  normalization: True
+  random_mirror: False
+  random_mirror_p: 0.0
+  is_vector: False
+  lap_pe: False
+
+test_feeder_args:
+  data_path: data/lsa64_si/test_data.npy     # held-out signers 9-10 (canonical SI test)
+  label_path: data/lsa64_si/test_label.pkl
+  random_mirror: False
+  normalization: True
+  is_vector: False
+  lap_pe: False
+  window_size: 120
+  random_choose: False
+
+# model
+model: model.block_gcn.Model
+model_args:
+  num_class: 64
+  num_point: 27
+  num_person: 1
+  graph: graph.sign_27.Graph
+  graph_args:
+    labeling_mode: 'spatial'
+  in_channels: 3
+  num_blocks: [2, 2, 2, 2]
+  stage_channels: [64, 128, 256, 256]
+  max_distance: 8
+
+# optim
+weight_decay: 0.0001
+base_lr: 0.1
+step: [60, 80]
+
+# training
+device: [0]
+keep_rate: 0.9
+only_train_epoch: 1
+batch_size: 32
+test_batch_size: 32
+num_epoch: 100
+nesterov: True
+warm_up_epoch: 5
+optimizer: SGD
+
+wandb: False
+num_worker: 0
+save_interval: 10

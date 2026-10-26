@@ -1,0 +1,20 @@
+source pool sample: 800 clips  (desc dim 54)
+target     MMD(pool,target)  optimal_lambda
+  BdSL                 0.1429           0.100
+  LSA64                0.1763           0.100
+  AUTSL                0.4115           0.010
+  KArSL                0.3445             nan
+  GSL                  0.1206             nan
+  BISINDO              0.4495             nan
+  LSFB                 0.4798             nan
+  LIBRAS               0.3151             nan
+
+  by increasing distance: ['GSL', 'BdSL', 'LSA64', 'LIBRAS', 'KArSL', 'AUTSL', 'BISINDO', 'LSFB']
+  (known-lambda) order: ['BdSL', 'LSA64', 'AUTSL']  lambdas: [0.1, 0.1, 0.01]
+  PREDICTIVE LAW holds if lambda is (weakly) DECREASING as distance grows.
+  -> monotone decreasing? True
+  GSL: distance 0.1206 -> PREDICTED lambda (large/0.1 (close)); confirm against its fine-tune result.
+  LIBRAS: distance 0.3151 -> PREDICTED lambda (small/0.01 (distant)); confirm against its fine-tune result.
+  KArSL: distance 0.3445 -> PREDICTED lambda (small/0.01 (distant)); confirm against its fine-tune result.
+  BISINDO: distance 0.4495 -> PREDICTED lambda (small/0.01 (distant)); confirm against its fine-tune result.
+  LSFB: distance 0.4798 -> PREDICTED lambda (small/0.01 (distant)); confirm against its fine-tune result.

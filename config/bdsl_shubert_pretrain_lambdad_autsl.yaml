@@ -1,0 +1,60 @@
+Experiment_name: bdsl_shubert_pretrain_lambdad_autsl
+
+# CONTINUOUS λ(d) cross-lingual pretraining (reviewer §13/§31/§32) — KEY CHECK.
+# AUTSL is the transfer target. Every FOREIGN source is far from AUTSL in
+# pose-motion MMD (WLASL 0.84, LSA64 0.45, KArSL 0.72), so the continuous gate
+#   λ_i = λ_max · σ((d0 - d_i)/τ)         [gate_mode: sigmoid]
+# decays all foreign-source alignment to ~0. The alignment term then vanishes and
+# the run reduces to PLAIN masked-SSL POOLING — recovering ≈pool 70, and fixing
+# the hard-gate DG-XL contradiction (DG-XL 66.7 < pool 70.2 on AUTSL) where the
+# min-normalised gate forced a non-zero alignment even for an all-distant pool.
+#
+# Expected gate weights (d0=0.2, tau=0.05): [BdSL 0.83, WLASL 0.0, LSA64 0.01,
+# AUTSL(target) 0.98, KArSL 0.0] -> the bulk foreign volume (WLASL/KArSL) is off.
+
+backbone: model.block_gcn.Model
+backbone_args:
+  num_class: 60
+  num_point: 27
+  num_person: 1
+  graph: graph.sign_27.Graph
+  graph_args:
+    labeling_mode: 'spatial'
+  in_channels: 3
+  num_blocks: [2, 2, 2, 2]
+  stage_channels: [64, 128, 256, 256]
+  max_distance: 8
+  return_features: True
+  stride_between_stages: False
+
+pretrain:
+  manifest: data/ssl_pool_manifest_multisrc.json
+  targets:  data/pretrain_kmeans_targets_multisrc.npz
+  num_codes: 64
+  mask_ratio: 0.3
+  window_size: 120
+  feat_dim: 256
+  # --- cross-lingual mechanism + continuous λ(d) gate ---
+  num_languages: 5          # 0=BdSL 1=ASL/WLASL 2=LSA64 3=AUTSL(target) 4=KArSL
+  target_lang: 3            # AUTSL is the transfer target
+  lambda_adv: 0.1           # λ_max ceiling for the adversarial term
+  grl_alpha: 1.0
+  lambda_contrast: 0.1      # λ_max ceiling for the contrastive term
+  proj_dim: 128
+  contrast_temp: 0.1
+  code_sim_threshold: 0.5
+  # AUTSL-anchored MMD(source->AUTSL), id order 0..4 (tools/compute_autsl_anchor_distances.py)
+  source_distances: [0.1207, 0.8357, 0.4458, 0.0, 0.7242]
+  gate_mode: sigmoid        # continuous λ(d) = λ_max·σ((d0-d)/τ)
+  align_lambda_max: 1.0
+  align_tau: 0.05           # sharp decay: far sources -> ~0
+  align_d0: 0.2             # below every foreign source distance -> foreign alignment vanishes
+
+base_lr: 0.0001
+weight_decay: 0.0001
+
+batch_size: 32
+num_epoch: 30
+save_interval: 5
+num_worker: 8
+log_every: 50

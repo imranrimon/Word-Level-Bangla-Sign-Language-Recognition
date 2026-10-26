@@ -1,0 +1,50 @@
+Experiment_name: bdsl_shubert_pretrain_pool6_uniform
+
+# DG-XL (P1 flagship): Distance-Gated Cross-Lingual masked pose pretraining.
+# 6-source pool (BdSL target + WLASL/LSA64/AUTSL/KArSL sources); the cross-lingual
+# ALIGNMENT (GRL + shared-codebook contrastive) is weighted PER SOURCE by
+# w = exp(-(MMD(source->BdSL) - min)/tau): close sources drive alignment, far ones
+# (AUTSL/KArSL) are down-weighted so they add only generic masked SSL (never backfire).
+# Operationalises the distance-gating law (P1.6) as a learned objective.
+
+backbone: model.block_gcn.Model
+backbone_args:
+  num_class: 60
+  num_point: 27
+  num_person: 1
+  graph: graph.sign_27.Graph
+  graph_args:
+    labeling_mode: 'spatial'
+  in_channels: 3
+  num_blocks: [2, 2, 2, 2]
+  stage_channels: [64, 128, 256, 256]
+  max_distance: 8
+  return_features: True
+  stride_between_stages: False
+
+pretrain:
+  manifest: data/ssl_pool_manifest_multisrc.json
+  targets:  data/pretrain_kmeans_targets_multisrc.npz
+  num_codes: 64
+  mask_ratio: 0.3            # matched to the vanilla-xling baseline for a clean DG-XL-vs-xling comparison
+  window_size: 120
+  feat_dim: 256
+  # --- cross-lingual mechanism + DG-XL distance gate ---
+  num_languages: 5          # 0=BdSL 1=ASL/WLASL 2=LSA64 3=AUTSL 4=KArSL (feeders/pretrain_feeder.language_of)
+  lambda_adv: 0.1
+  grl_alpha: 1.0
+  lambda_contrast: 0.1
+  proj_dim: 128
+  contrast_temp: 0.1
+  code_sim_threshold: 0.5
+  # per-source MMD(source->BdSL); ASL=0.22 is an estimate pending exact compute (others measured, P1.6)
+  align_tau: 0.1   # no source_distances => uniform alignment (gate OFF)
+
+base_lr: 0.0001
+weight_decay: 0.0001
+
+batch_size: 32
+num_epoch: 30
+save_interval: 5
+num_worker: 8
+log_every: 50

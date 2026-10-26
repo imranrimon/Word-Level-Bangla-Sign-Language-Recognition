@@ -1,0 +1,20 @@
+domains: ['ntu_hrnet', 'hmdb51', 'ucf101', 'gym']
+        ntu_hrnet   hmdb51   ucf101      gym
+ntu_hrnet   0.0000   0.3852   0.3761   0.6508
+hmdb51     0.3852   0.0000   0.0029   0.1688
+ucf101     0.3761   0.0029   0.0000   0.1828
+gym        0.6508   0.1688   0.1828   0.0000
+
+source->target pairs sorted by distance:
+  hmdb51  -> ucf101   MMD=0.0029
+  ucf101  -> hmdb51   MMD=0.0029
+  hmdb51  -> gym      MMD=0.1688
+  gym     -> hmdb51   MMD=0.1688
+  ucf101  -> gym      MMD=0.1828
+  gym     -> ucf101   MMD=0.1828
+  ntu_hrnet -> ucf101   MMD=0.3761
+  ucf101  -> ntu_hrnet  MMD=0.3761
+  ntu_hrnet -> hmdb51   MMD=0.3852
+  hmdb51  -> ntu_hrnet  MMD=0.3852
+  ntu_hrnet -> gym      MMD=0.6508
+  gym     -> ntu_hrnet  MMD=0.6508

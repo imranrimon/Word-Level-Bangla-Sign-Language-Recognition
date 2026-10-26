@@ -1,0 +1,3 @@
+V3 keys 21083 v1 cache files 21083 same set: True
+v1 slots == V3[V1_IDX] on 300/300 clips (T mismatch 0)
+v1 slot -> true landmark: {"0": "RH0", "1": "RH12", "2": "RH11", "3": "RH14", "4": "RH13", "5": "RH16", "6": "RH15", "7": "FACE447", "8": "FACE451", "9": "FACE452", "10": "FACE455", "11": "FACE456", "12": "FACE459", "13": "FACE460", "14": "FACE463", "15": "FACE464", "16": "FACE467", "17": "FACE426", "18": "FACE430", "19": "FACE431", "20": "FACE434", "21": "FACE435", "22": "FACE438", "23": "FACE439", "24": "FACE442", "25": "FACE443", "26": "FACE446"}

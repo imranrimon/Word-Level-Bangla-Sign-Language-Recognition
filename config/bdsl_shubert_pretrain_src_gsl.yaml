@@ -1,0 +1,40 @@
+Experiment_name: bdsl_shubert_pretrain_src_gsl
+
+# P1 pairwise transfer matrix: SOURCE-ONLY masked pose SSL on GSL only.
+# One of 5 single-source backbones; fine-tuned onto each OTHER target @10% to
+# fill the ordered source->target gain matrix. Same recipe as
+# config/bdsl_shubert_pretrain_bdsl_only.yaml (BlockGCN, mono, K=64, mask 0.3).
+# stride_between_stages=False -> T_out==T_in for per-frame masked prediction.
+# Pool = the GSL pose cache only (single language); pose_motion k-means targets.
+
+backbone: model.block_gcn.Model
+backbone_args:
+  num_class: 60               # ignored in pretraining; needed for backbone init
+  num_point: 27
+  num_person: 1
+  graph: graph.sign_27.Graph
+  graph_args:
+    labeling_mode: 'spatial'
+  in_channels: 3
+  num_blocks: [2, 2, 2, 2]
+  stage_channels: [64, 128, 256, 256]
+  max_distance: 8
+  return_features: True
+  stride_between_stages: False
+
+pretrain:
+  manifest: data/ssl_pool_manifest_gsl.json
+  targets:  data/pretrain_kmeans_targets_gsl.npz
+  num_codes: 64
+  mask_ratio: 0.3
+  window_size: 120
+  feat_dim: 256
+
+base_lr: 0.0001
+weight_decay: 0.0001
+
+batch_size: 32
+num_epoch: 30
+save_interval: 5
+num_worker: 0
+log_every: 50

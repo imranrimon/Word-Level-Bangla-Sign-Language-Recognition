@@ -1,0 +1,9 @@
+| corpus | clips | med T | shoulder w | R wrist own/wrong (s) | L wrist own/wrong (s) | hand span (s) | hand/shoulder speed | nose up | miss body/R/L | dropout speed share | verdict |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| KArSL train | 300 | 19 | 0.153 | 0.05/2.36 | 0.07/2.36 | 0.42 | 2.3 | 1.00 | 0.00/0.02/0.01 | 0.07 | **PASS**  |
+| corpus | clips | med T | shoulder w | R wrist own/wrong (s) | L wrist own/wrong (s) | hand span (s) | hand/shoulder speed | nose up | miss body/R/L | dropout speed share | verdict |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| KArSL val | 300 | 19 | 0.153 | 0.05/2.35 | 0.07/2.35 | 0.43 | 2.5 | 1.00 | 0.00/0.04/0.02 | 0.10 | **PASS**  |
+| corpus | clips | med T | shoulder w | R wrist own/wrong (s) | L wrist own/wrong (s) | hand span (s) | hand/shoulder speed | nose up | miss body/R/L | dropout speed share | verdict |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| KArSL test | 300 | 28 | 0.163 | 0.06/2.29 | 0.06/2.30 | 0.46 | 3.9 | 1.00 | 0.00/0.36/0.33 | 0.23 | **PASS**  |

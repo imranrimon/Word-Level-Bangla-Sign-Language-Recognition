@@ -1,0 +1,49 @@
+Experiment_name: bdsl_shubert_pretrain_coral_autsl
+
+# CORAL alignment baseline (reviewer §29), AUTSL target. Mechanism-baseline table
+# counterpart to the λ(d) AUTSL key-check: CORAL (match source/target feature
+# covariance) INSTEAD of the DANN/GRL adversary. target = AUTSL clips, source =
+# all non-AUTSL clips in the batch. Ungated CORAL here (no distance gate) is the
+# honest §29 baseline; compare against pool, xling(DANN), and the continuous
+# λ(d) AUTSL run to fill the mechanism-vs-distance table.
+
+backbone: model.block_gcn.Model
+backbone_args:
+  num_class: 60
+  num_point: 27
+  num_person: 1
+  graph: graph.sign_27.Graph
+  graph_args:
+    labeling_mode: 'spatial'
+  in_channels: 3
+  num_blocks: [2, 2, 2, 2]
+  stage_channels: [64, 128, 256, 256]
+  max_distance: 8
+  return_features: True
+  stride_between_stages: False
+
+pretrain:
+  manifest: data/ssl_pool_manifest_multisrc.json
+  targets:  data/pretrain_kmeans_targets_multisrc.npz
+  num_codes: 64
+  mask_ratio: 0.3
+  window_size: 120
+  feat_dim: 256
+  # --- CORAL alignment (replaces DANN/GRL) ---
+  num_languages: 5          # 0=BdSL 1=ASL/WLASL 2=LSA64 3=AUTSL(target) 4=KArSL
+  target_lang: 3            # AUTSL is the transfer target
+  lambda_adv: 0.0           # GRL adversary OFF
+  lambda_contrast: 0.0      # contrastive OFF -> isolate CORAL as the sole alignment term
+  lambda_coral: 0.1         # covariance-matching alignment weight
+  proj_dim: 128
+  contrast_temp: 0.1
+  code_sim_threshold: 0.5
+
+base_lr: 0.0001
+weight_decay: 0.0001
+
+batch_size: 32
+num_epoch: 30
+save_interval: 5
+num_worker: 8
+log_every: 50

@@ -1,0 +1,50 @@
+{
+ "frames": 307116,
+ "transition_frame_share": 0.11129996483413433,
+ "transition_frame_share_by_source": {
+  "data/bdslw102_a_pose_cache": 0.1599845301018435,
+  "data/bdslw401_pose_cache_front": 0.10650473389724965,
+  "data/wlasl_pose_cache_v2": 0.1154861508806727
+ },
+ "pose_motion": {
+  "motion_sq_mass_in_transition_frames": 0.9935044050216675,
+  "dropout_clusters": 26,
+  "dropout_cluster_frame_share": 0.1092942080516808,
+  "transition_frames_in_dropout_clusters": 0.9819788192615997,
+  "cluster_transition_share_sorted": [
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ "pose_motion_masked": {
+  "motion_sq_mass_in_transition_frames": 0.28020575642585754,
+  "dropout_clusters": 0,
+  "dropout_cluster_frame_share": 0.0,
+  "transition_frames_in_dropout_clusters": 0.0,
+  "cluster_transition_share_sorted": [
+   0.494,
+   0.4,
+   0.354,
+   0.346,
+   0.338,
+   0.331,
+   0.312,
+   0.303,
+   0.301,
+   0.26,
+   0.23,
+   0.227
+  ]
+ },
+ "decision_use_masked": true
+}

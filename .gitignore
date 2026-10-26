@@ -1,0 +1,39 @@
+# Data, checkpoints and run outputs (never committed)
+data/
+work_dir/
+slurm_logs/
+*.pt
+*.pth
+*.pkl
+*.npy
+*.npz
+*.ckpt
+
+# Live run log written by main.py (the archived log is results/results_final.csv)
+/results_final.csv
+/results_p1fix_v2.csv
+*.lock
+
+# Regenerated outputs
+results/figures/
+results/refit_v1/
+results/refit_v2/
+
+# Python / tooling
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.ipynb_checkpoints/
+wandb/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store

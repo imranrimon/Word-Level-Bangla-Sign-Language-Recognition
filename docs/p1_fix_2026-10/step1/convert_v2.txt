@@ -1,0 +1,17 @@
+data/raw_wlasl_v3/landmarks_V3.npz: 21083 clips
+[geometry pre-write] n=400 shoulder_w=0.298 Rwrist=0.07s (wrong side 1.10s) Lwrist=0.07s (wrong side 0.73s) span=0.26s speed ratio=13.8 nose_up=1.00 -> PASS
+[geometry pre-write] per-clip wrist check: 0.958 of 400 checkable clips OK
+  2000/21083
+  4000/21083
+  6000/21083
+  8000/21083
+  10000/21083
+  12000/21083
+  14000/21083
+  16000/21083
+  18000/21083
+  20000/21083
+written 21083, skipped existing 0
+[geometry post-write] n=400 shoulder_w=0.303 Rwrist=0.06s (wrong side 1.01s) Lwrist=0.07s (wrong side 0.75s) span=0.26s speed ratio=13.6 nose_up=1.00 -> PASS
+[geometry post-write] per-clip wrist check: 0.955 of 400 checkable clips OK
+OK

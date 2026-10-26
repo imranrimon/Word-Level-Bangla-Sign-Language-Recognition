@@ -1,0 +1,13 @@
+[gate] 400 clean rows (since 2026-08-21), 20 exps
+
+src->tgt                      MMD  scratch     SSL    gain
+  ucf101->hmdb51            0.003    23.66   22.62   -1.04
+  ucf101->gym               0.183    58.57   59.55   +0.98
+  ntu_hrnet->ucf101            0.376    37.41   37.15   -0.27
+  ucf101->ntu_hrnet         0.376    63.48   54.98   -8.50
+  ntu_hrnet->hmdb51            0.385    23.66   24.51   +0.85
+  ntu_hrnet->gym               0.651    58.57   60.83   +2.26
+
+GATE fit: gain = -1.72 +2.34*MMD   R2=0.017
+close (MMD<0.25) mean gain -0.03 | far (MMD>0.25) -1.41
+VERDICT: NULL (distance does not govern cross-domain transfer)

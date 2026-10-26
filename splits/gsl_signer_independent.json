@@ -1,0 +1,20 @@
+{
+  "schema": "gsl-isol-signer-independent-v1",
+  "description": "Fixed signer-disjoint split of GSL isol. (Greek Sign Language, isolated) for cross-lingual transfer evaluation (P1, 6th target language). 310 glosses, 7 signers; train=signers 1-5, val=6, test=7. The official iso split CSVs are NOT signer-disjoint and are unioned then re-split here.",
+  "dir_pattern": "^(?P<scenario>[a-z]+)(?P<block>\\d+)_signer(?P<signer>\\d+)_rep(?P<rep>\\d+)_glosses$",
+  "splits": {
+    "train": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "val": [
+      6
+    ],
+    "test": [
+      7
+    ]
+  }
+}

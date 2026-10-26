@@ -1,0 +1,25 @@
+{
+  "schema": "minds-libras-signer-independent-v1",
+  "description": "Fixed signer-disjoint split of MINDS-Libras (Brazilian Sign Language, isolated glosses) for cross-lingual transfer evaluation (P1, 6th target language, replacing INCLUDE-50). 20 signs, 12 signers; train=signers 1-8, val=9-10, test=11-12. Signer id is the top-level Sinalizador<SS> directory (Zenodo record 2667329, one zip per signer).",
+  "signer_dir_pattern": "^Sinalizador0*(\\d+)$",
+  "splits": {
+    "train": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "val": [
+      9,
+      10
+    ],
+    "test": [
+      11,
+      12
+    ]
+  }
+}
