@@ -4,7 +4,7 @@
 Every step re-runs an analysis script on the files in results/ and docs/ and compares its
 output with the archived output that the paper quotes:
 
-  v2      tools/p1_fix/refit_v2.py                 -> docs/p1_fix_2026-10/results/refit_v2.json (byte-identical)
+  v2      tools/p1_fix/refit_v2.py                 -> docs/p1_fix_2026-10/results/refit_v2.json (equal within 1e-6)
   v1      tools/p1_refit/refit.py --quick          -> decision, primary posterior and LOLO of
                                                       docs/p1_refit_2026-10/refit_results.json (exact)
   report  tools/p1_refit/report.py                 -> docs/p1_refit_2026-10/RESULTS.md (generated part)
@@ -71,19 +71,45 @@ def close(a, b, tol=1e-9):
     return a == b
 
 
+def first_diff(a, b, tol, path="$"):
+    """Return the JSON path of the first value that differs beyond ``tol`` (None if all close)."""
+    if isinstance(a, dict) and isinstance(b, dict):
+        if a.keys() != b.keys():
+            return f"{path} (keys differ)"
+        for k in a:
+            d = first_diff(a[k], b[k], tol, f"{path}.{k}")
+            if d:
+                return d
+        return None
+    if isinstance(a, (list, tuple)) and isinstance(b, (list, tuple)):
+        if len(a) != len(b):
+            return f"{path} (length {len(a)} vs {len(b)})"
+        for i, (x, y) in enumerate(zip(a, b)):
+            d = first_diff(x, y, tol, f"{path}[{i}]")
+            if d:
+                return d
+        return None
+    return None if close(a, b, tol) else f"{path}: got {a!r}, archived {b!r}"
+
+
 # ----------------------------------------------------------------------------------- steps
 def step_v2(tmp, full):
     out = os.path.join(tmp, "v2")
     log = run([PY, "tools/p1_fix/refit_v2.py", "--out", out])
     got = os.path.join(out, "refit_v2.json")
     ref = os.path.join(ROOT, "docs/p1_fix_2026-10/results/refit_v2.json")
-    same = open(got, "rb").read() == open(ref, "rb").read()
+    # Byte identity holds on the reference machine; other BLAS/NumPy builds can differ in the last
+    # floating-point digits, so values are compared with a relative tolerance (strings/ints exact).
+    byte_same = open(got, "rb").read() == open(ref, "rb").read()
+    diff = None if byte_same else first_diff(json.load(open(got)), json.load(open(ref)), tol=1e-6)
+    same = byte_same or diff is None
     P = json.load(open(got))["primary"]
     h = HEADLINE["v2"]
     head = (P["verdict"] == h["verdict"] and round(P["P_b_neg"], 3) == h["P_b_neg"] and P["lolo"]["correct"] == h["lolo"]
             and tuple(round(x, 2) for x in P["b"]) == h["b"])
     msg = (f"verdict {P['verdict']}; b {P['b'][1]:+.2f} [{P['b'][0]:+.2f}, {P['b'][2]:+.2f}]; P(b<0) {P['P_b_neg']:.3f}; "
-           f"LOLO {P['lolo']['correct']}/{P['lolo']['n']}; JSON {'byte-identical' if same else 'DIFFERS'}")
+           f"LOLO {P['lolo']['correct']}/{P['lolo']['n']}; JSON "
+           + ("byte-identical" if byte_same else "equal within 1e-6" if same else f"DIFFERS at {diff}"))
     return same and head, msg, log
 
 
